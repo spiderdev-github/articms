@@ -1,0 +1,182 @@
+/* =============================================
+   Mobile navigation — burger menu
+   Shared across all themes
+   ============================================= */
+
+/* ── Burger button ── */
+.burger{
+  display:none;
+  flex-direction:column;
+  justify-content:center;
+  gap:5px;
+  cursor:pointer;
+  background:none;
+  border:none;
+  padding:8px;
+  margin-left:auto;
+  flex-shrink:0;
+  z-index:110;
+  color: #fff;
+}
+.burger span{
+  display:block;
+  width:24px;
+  height:2px;
+  border-radius:2px;
+  background:currentColor;
+  transition:transform .28s ease, opacity .28s ease;
+  transform-origin:center;
+}
+/* State: open — cross */
+.burger.is-open span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
+.burger.is-open span:nth-child(2){ opacity:0; transform:scaleX(0); }
+.burger.is-open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+
+/* ── Overlay backdrop ── */
+.mobile-nav-overlay{
+  display:none;
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.52);
+  z-index:120;
+  opacity:0;
+  transition:opacity .3s ease;
+  backdrop-filter:blur(3px);
+  -webkit-backdrop-filter:blur(3px);
+}
+.mobile-nav-overlay.is-open{
+  display:block;
+  opacity:1;
+}
+
+/* ── Drawer panel ── */
+.mobile-nav{
+  position:fixed;
+  top:0;right:0;
+  width:min(320px, 88vw);
+  height:100%;
+  z-index:130;
+  display:flex;
+  flex-direction:column;
+  overflow-y:auto;
+  transform:translateX(100%);
+  transition:transform .32s cubic-bezier(.4,0,.2,1);
+  /* Fallback background — overridden by theme vars when available */
+  background:#1a1a24;
+  color:#fff;
+}
+.mobile-nav.is-open{
+  transform:translateX(0);
+  box-shadow:-8px 0 48px rgba(0,0,0,.35);
+}
+
+/* ── Drawer header ── */
+.mobile-nav-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:16px 20px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  flex-shrink:0;
+}
+.mobile-nav-brand{
+  font-size:15px;
+  font-weight:800;
+  letter-spacing:-.01em;
+}
+.mobile-nav-close{
+  display:flex;align-items:center;justify-content:center;
+  width:34px;height:34px;
+  border-radius:50%;
+  background:rgba(255,255,255,.08);
+  border:none;cursor:pointer;
+  color:inherit;
+  font-size:18px;
+  line-height:1;
+  transition:background .2s;
+}
+.mobile-nav-close:hover{background:rgba(255,255,255,.16);}
+
+/* ── Nav links list ── */
+.mobile-nav-list{
+  flex:1;
+  padding:12px 0;
+  list-style:none;
+}
+.mobile-nav-list li>a{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:13px 20px;
+  font-size:15px;
+  font-weight:600;
+  color:rgba(255,255,255,.82);
+  transition:background .18s, color .18s;
+  text-decoration:none;
+}
+.mobile-nav-list li>a:hover{
+  background:rgba(255,255,255,.07);
+  color:#fff;
+}
+/* Sub-items (children) */
+.mobile-nav-sub{
+  list-style:none;
+  background:rgba(0,0,0,.15);
+  border-left:2px solid rgba(255,255,255,.12);
+  margin-left:20px;
+  border-radius:4px;
+  overflow:hidden;
+}
+.mobile-nav-sub li a{
+  display:block;
+  padding:10px 16px;
+  font-size:14px;
+  color:rgba(255,255,255,.6);
+  transition:color .18s, background .18s;
+  text-decoration:none;
+}
+.mobile-nav-sub li a:hover{
+  color:#fff;
+  background:rgba(255,255,255,.06);
+}
+/* Toggle for sub-items */
+.mobile-nav-toggle{
+  font-size:12px;
+  opacity:.5;
+  transition:transform .22s ease;
+  flex-shrink:0;
+  margin-left:8px;
+}
+.mobile-nav-list li.sub-open>.mobile-nav-toggle{ transform:rotate(180deg); }
+.mobile-nav-sub{ display:none; }
+.mobile-nav-list li.sub-open .mobile-nav-sub{ display:block; }
+
+/* ── CTA footer ── */
+.mobile-nav-footer{
+  padding:20px;
+  border-top:1px solid rgba(255,255,255,.08);
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  flex-shrink:0;
+}
+.mobile-nav-footer .btn{
+  justify-content:center;
+  width:100%;
+  text-align:center;
+}
+.mobile-nav-footer .phone-pill{
+  justify-content:center;
+  text-decoration:none;
+}
+
+/* ── Theme colour overrides ── */
+/* Artisan Pro — light theme draws dark drawer */
+[data-theme="artisan"] .mobile-nav{
+  background: #1a2d5a;
+  color:#fff;
+}
+
+/* ── Show burger on mobile ── */
+@media (max-width: 920px){
+  .burger{ display:flex; }
+}

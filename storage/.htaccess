@@ -1,0 +1,15 @@
+# =====================================
+# Storage Security - Joker Peintre
+# =====================================
+
+# Deny all access to this directory
+Order Allow,Deny
+Deny from all
+
+# For Apache 2.4+
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+
+# Disable directory listing
+Options -Indexes

@@ -1,0 +1,313 @@
+<?php
+/**
+ * Router de pages CMS dynamiques
+ * URL : /page.php?slug=mon-slug  OU  /mon-slug  (via .htaccess)
+ */
+require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/settings.php';
+require_once __DIR__ . '/includes/form-renderer.php';
+
+/* ===================================================================
+ * Rendu des formulaires embarqués
+ * Remplace <figure class="form-shortcode" data-form-slug="slug">...
+ * par le HTML du formulaire dynamique
+ * ================================================================= */
+function renderFormFigures(string $html): string {
+    return preg_replace_callback(
+        '/<figure[^>]+class="form-shortcode"[^>]+data-form-slug="([a-z0-9\-]+)"[^>]*>.*?<\/figure>/si',
+        function($matches) {
+            ob_start();
+            renderForm($matches[1]);
+            return ob_get_clean();
+        },
+        $html
+    );
+}
+
+/* ===================================================================
+ * Rendu des galeries embarquées
+ * Remplace <figure class="gallery-shortcode" data-gallery-id="N">...
+ * par le HTML de la galerie photo
+ * ================================================================= */
+function renderGalleryShortcodes(string $html, PDO $pdo): string {
+    return preg_replace_callback(
+        '/<figure[^>]+class="gallery-shortcode"[^>]+data-gallery-id="(\d+)"[^>]*>.*?<\/figure>/si',
+        function($matches) use ($pdo) {
+            $galId = (int)$matches[1];
+
+            // Load gallery meta
+            $stmtG = $pdo->prepare("SELECT * FROM galleries WHERE id = ?");
+            $stmtG->execute([$galId]);
+            $gallery = $stmtG->fetch();
+            if (!$gallery) return '<!-- galerie introuvable id=' . $galId . ' -->';
+
+            $showLabels  = (bool)($gallery['show_item_labels'] ?? 1);
+            $perPage     = max(1, (int)($gallery['items_per_page'] ?? 6));
+
+            // Load réalisations via gallery_items + their images
+            $stmtR = $pdo->prepare("
+                SELECT r.id AS real_id, r.title, r.city, r.type, r.cover_image, r.description,
+                       ri.image_path, ri.alt_text
+                FROM gallery_items gi
+                JOIN realisations r ON r.id = gi.realisation_id
+                LEFT JOIN realisation_images ri ON ri.realisation_id = r.id
+                WHERE gi.gallery_id = ? AND r.is_published = 1
+                ORDER BY gi.sort_order ASC, r.id ASC, ri.sort_order ASC, ri.id ASC
+            ");
+            $stmtR->execute([$galId]);
+            $rows = $stmtR->fetchAll(PDO::FETCH_ASSOC);
+
+            // Build realisation list (ordered) with their images
+            $reals = [];
+            foreach ($rows as $row) {
+                $rid = $row['real_id'];
+                if (!isset($reals[$rid])) {
+                    $reals[$rid] = [
+                        'title'       => $row['title'],
+                        'city'        => $row['city'],
+                        'type'        => $row['type'],
+                        'description' => $row['description'],
+                        'cover_image' => $row['cover_image'],
+                        'images'      => [],
+                    ];
+                }
+                if (!empty($row['image_path'])) {
+                    $reals[$rid]['images'][] = [
+                        'image_path' => $row['image_path'],
+                        'alt_text'   => $row['alt_text'],
+                    ];
+                }
+            }
+
+            if (empty($reals)) return '<!-- galerie vide id=' . $galId . ' -->';
+
+            $baseUrl    = defined('BASE_URL') ? BASE_URL : '';
+            $totalItems = count($reals);
+            $totalPages = (int)ceil($totalItems / $perPage);
+            $blockId    = 'cms-gal-' . $galId;
+            $cardIdx    = 0;
+
+            $out  = '<div class="cms-gallery" data-gallery-id="' . $galId . '" id="' . $blockId . '">';
+
+            // Header
+            if (!empty($gallery['show_gallery_header'])) {
+                $out .= '<div class="cms-gallery__header">';
+                $out .= '<h3>' . htmlspecialchars($gallery['name']) . '</h3>';
+                if (!empty($gallery['description'])) {
+                    $out .= '<p class="cms-gallery__meta">' . htmlspecialchars($gallery['description']) . '</p>';
+                }
+                $out .= '</div>';
+            }
+
+            // Cards grid
+            $out .= '<div class="grid-3" id="' . $blockId . '-grid">';
+
+            foreach ($reals as $rid => $r) {
+                $cardPage = (int)floor($cardIdx / $perPage) + 1;
+
+                // cover = first uploaded image, fallback to cover_image field
+                $coverPath = (!empty($r['images']))
+                    ? $r['images'][0]['image_path']
+                    : ($r['cover_image'] ?? '');
+                $cover    = $coverPath ? $baseUrl . '/' . ltrim($coverPath, '/') : '';
+                $galleryKey = 'gal-' . $galId . '-' . $rid;
+
+                $out .= '<article class="card" data-gpage="' . $cardPage . '"' . ($cardPage > 1 ? ' style="display:none"' : '') . '>';
+
+                if ($cover) {
+                    // Visible cover link
+                    $out .= '<a href="' . $cover . '" class="glightbox" data-gallery="' . $galleryKey . '">';
+                    $out .= '<img src="' . $cover . '" loading="lazy" style="width:100%;height:220px;object-fit:cover;border-radius:16px;">';
+                    $out .= '</a>';
+                    // Hidden supplementary images
+                    foreach ($r['images'] as $img) {
+                        $src = $baseUrl . '/' . ltrim($img['image_path'], '/');
+                        $out .= '<a href="' . $src . '" class="glightbox" data-gallery="' . $galleryKey . '" style="display:none;"></a>';
+                    }
+                } else {
+                    $out .= '<div style="height:220px;border-radius:16px;background:#1a1a1a;"></div>';
+                }
+
+                if ($showLabels) {
+                    $title = htmlspecialchars($r['title']);
+                    if (!empty($r['city'])) $title .= ' - ' . htmlspecialchars($r['city']);
+                    $out .= '<h3 style="margin-top:14px;">' . $title . '</h3>';
+                    if (!empty($r['description'])) {
+                        $out .= '<p>' . htmlspecialchars($r['description']) . '</p>';
+                    }
+                    if (!empty($r['type'])) {
+                        $out .= '<div class="muted small">' . htmlspecialchars($r['type']) . '</div>';
+                    }
+                }
+
+                $out .= '</article>';
+                $cardIdx++;
+            }
+
+            $out .= '</div><!-- /.grid-3 -->';
+
+            // Pagination (only if more than one page)
+            if ($totalPages > 1) {
+                $out .= '<div class="pagination-wrapper" style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:24px;" id="' . $blockId . '-pages">';
+                $out .= '<button class="btn btn-ghost cms-gal-prev" style="display:none" onclick="cmsGalPage(\'' . $blockId . '\',1,' . $totalPages . ',this,-1)">&larr; Pr&eacute;c&eacute;dent</button>';
+                for ($p = 1; $p <= $totalPages; $p++) {
+                    $active = $p === 1 ? 'btn-primary' : 'btn-ghost';
+                    $out .= '<button class="btn ' . $active . '" data-page="' . $p . '" onclick="cmsGalPage(\'' . $blockId . '\',' . $p . ',' . $totalPages . ',this,0)">' . $p . '</button>';
+                }
+                $out .= '<button class="btn btn-ghost cms-gal-next" onclick="cmsGalPage(\'' . $blockId . '\',2,' . $totalPages . ',this,1)">Suivant &rarr;</button>';
+                $out .= '</div>';
+            }
+
+            $out .= '</div><!-- /.cms-gallery -->';
+
+            // Inline pagination JS (emitted once per gallery)
+            $out .= '
+<script>
+(function(){
+  if(window.cmsGalPage) return; // define only once
+  window.cmsGalPage = function(blockId, targetPage, totalPages, btn, dir) {
+    var grid = document.getElementById(blockId + "-grid");
+    if (!grid) return;
+    // resolve relative nav
+    if (dir !== 0) {
+      var cur = parseInt(grid.querySelector(".card:not([style*=\"none\"])")?.dataset?.gpage || 1);
+      targetPage = cur + dir;
+    }
+    targetPage = Math.max(1, Math.min(totalPages, targetPage));
+    // show/hide cards
+    grid.querySelectorAll(".card").forEach(function(c) {
+      c.style.display = (parseInt(c.dataset.gpage) === targetPage) ? "" : "none";
+    });
+    // update button states
+    var pagesEl = document.getElementById(blockId + "-pages");
+    if (pagesEl) {
+      pagesEl.querySelectorAll("button[data-page]").forEach(function(b) {
+        b.className = parseInt(b.dataset.page) === targetPage ? "btn btn-primary" : "btn btn-ghost";
+      });
+      var prevBtn = pagesEl.querySelector(".cms-gal-prev");
+      var nextBtn = pagesEl.querySelector(".cms-gal-next");
+      if (prevBtn) prevBtn.style.display = targetPage <= 1 ? "none" : "";
+      if (nextBtn) nextBtn.style.display = targetPage >= totalPages ? "none" : "";
+    }
+    // reinit glightbox so new visible cards are indexed
+    if (window.GLightbox) { try { window._cmsGlb && window._cmsGlb.destroy(); window._cmsGlb = GLightbox(); } catch(e){} }
+    // scroll to gallery top
+    var block = document.getElementById(blockId);
+    if (block) block.scrollIntoView({behavior:"smooth", block:"start"});
+  };
+  // store glightbox instance for later reinit
+  document.addEventListener("DOMContentLoaded", function() {
+    if (window.GLightbox) window._cmsGlb = GLightbox();
+  });
+})();
+</script>';
+
+            return $out;
+        },
+        $html
+    );
+}
+
+$rawSlug = trim($_GET['slug'] ?? '', '/');
+$rawSlug = preg_replace('/[^a-z0-9\-\/]/', '', strtolower($rawSlug));
+
+if (empty($rawSlug)) {
+    http_response_code(404);
+    include __DIR__ . '/includes/header.php';
+    echo '<main><section class="section"><div class="container"><h1>Page introuvable</h1></div></section></main>';
+    include __DIR__ . '/includes/footer.php';
+    exit;
+}
+
+$pdo = getPDO();
+
+// Résolution hiérarchique : parent/enfant ou page racine
+$parts = explode('/', $rawSlug, 2);
+if (count($parts) === 2) {
+    [$parentSlug, $childSlug] = $parts;
+    $stmt = $pdo->prepare("
+        SELECT c.* FROM cms_pages c
+        INNER JOIN cms_pages p ON c.parent_id = p.id
+        WHERE p.slug = :pslug AND c.slug = :cslug AND c.is_published = 1
+        LIMIT 1
+    ");
+    $stmt->execute([':pslug' => $parentSlug, ':cslug' => $childSlug]);
+} else {
+    $stmt = $pdo->prepare("SELECT * FROM cms_pages WHERE slug = :slug AND is_published = 1 AND parent_id IS NULL LIMIT 1");
+    $stmt->execute([':slug' => $rawSlug]);
+}
+$page = $stmt->fetch();
+
+// Fallback : chercher sans contrainte parent (compatibilité anciennes pages)
+if (!$page && count($parts) === 1) {
+    $stmt = $pdo->prepare("SELECT * FROM cms_pages WHERE slug = :slug AND is_published = 1 LIMIT 1");
+    $stmt->execute([':slug' => $rawSlug]);
+    $page = $stmt->fetch();
+}
+
+if (!$page) {
+    http_response_code(404);
+    $pageTitle = '404 - Page introuvable';
+    $pageDescription = '';
+    include __DIR__ . '/includes/header.php';
+    echo '<main><section class="section"><div class="container">
+            <h1>Page introuvable</h1>
+            <p class="muted">Cette page n\'existe pas ou n\'est pas publiée.</p>
+            <a class="btn btn-ghost" href="' . BASE_URL . '/">Retour à l\'accueil</a>
+          </div></section></main>';
+    include __DIR__ . '/includes/footer.php';
+    exit;
+}
+
+$pageTitle       = !empty($page['meta_title']) ? $page['meta_title'] : $page['title'];
+$pageDescription = $page['meta_desc'] ?? '';
+
+include __DIR__ . '/includes/header.php';
+?>
+
+<main>
+
+<section class="section" style="padding-bottom:0;">
+  <div class="container">
+
+    <?php if (!empty($page['kicker'])): ?>
+    <span class="kicker"><span class="dot"></span><b><?= htmlspecialchars($page['kicker']) ?></b></span>
+    <?php endif; ?>
+
+    <h1 style="font-size:var(--h1); margin:18px 0 12px;">
+      <?= htmlspecialchars(!empty($page['h1']) ? $page['h1'] : $page['title']) ?>
+    </h1>
+
+  </div>
+</section>
+
+<?php
+$contentTrimmed = ltrim($page['content'] ?? '');
+$contentRendered = renderFormFigures(renderGalleryShortcodes($page['content'] ?? '', $pdo));
+$isStructured   = stripos($contentTrimmed, '<section') === 0;
+?>
+
+<?php if ($isStructured): ?>
+  <?= $contentRendered ?>
+<?php else: ?>
+<section class="section">
+  <div class="container">
+    <div>
+      <?= $contentRendered ?>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="text-align:center;">
+    <a class="btn btn-primary" href="<?= BASE_URL ?>/contact">Demander un devis</a>
+    <a class="btn btn-ghost" href="<?= BASE_URL ?>/" style="margin-left:10px;">Retour à l'accueil</a>
+  </div>
+</section>
+<?php endif; ?>
+
+</main>
+
+<?php include __DIR__ . '/includes/footer.php'; ?>
+
+

@@ -1,0 +1,9 @@
+{
+  "name": "Haussmann",
+  "description": "Structure différente : bandeau contact en haut, header 2 niveaux avec logo centré + nav centrée, footer 4 colonnes luxe.",
+  "version": "1.0",
+  "author": "Joker Peintre",
+  "preview_bg": "#0e0c09",
+  "preview_accent": "#b89a5a",
+  "preview_gold": "#d4b97a"
+}

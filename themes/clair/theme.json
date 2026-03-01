@@ -1,0 +1,9 @@
+{
+  "name": "Clair",
+  "description": "Thème clair façon papier. Texte sombre, accent terracotta & or chaud.",
+  "version": "1.0",
+  "author": "Joker Peintre",
+  "preview_bg": "#f8f7f2",
+  "preview_accent": "#c23b22",
+  "preview_gold": "#c0870a"
+}

@@ -1,0 +1,14 @@
+@import url("./variables.css");
+
+@media (max-width: 980px){
+  .hero-grid{grid-template-columns:1fr; }
+  .grid-3{grid-template-columns:1fr; }
+  .gallery{grid-template-columns:1fr; }
+  .kpis{grid-template-columns:1fr; }
+  .footer-grid{grid-template-columns:1fr; }
+}
+
+@media (max-width: 520px){
+  .phone-pill em{display:none}
+  .brand-name span{display:none}
+}

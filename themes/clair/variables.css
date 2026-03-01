@@ -1,0 +1,30 @@
+:root{
+  --bg: #f8f7f2;
+  --surface: rgba(0,0,0,.04);
+  --surface-2: rgba(0,0,0,.07);
+  --text: rgba(15,20,35,.90);
+  --muted: rgba(15,20,35,.55);
+
+  --brand-red: #c23b22;
+  --brand-red-2: #d4500d;
+  --brand-gold: #c0870a;
+
+  --ok: #16a34a;
+  --line: rgba(0,0,0,.10);
+
+  --radius-xl: 22px;
+  --radius-lg: 16px;
+  --radius-md: 12px;
+
+  --shadow: 0 18px 60px rgba(0,0,0,.14);
+
+  --container: 1160px;
+  --pad: 20px;
+
+  --h1: clamp(32px, 4.2vw, 56px);
+  --h2: clamp(24px, 3vw, 38px);
+  --h3: 18px;
+  --p: 16px;
+
+  --trans: 180ms ease;
+}
