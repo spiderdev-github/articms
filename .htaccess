@@ -1,0 +1,16 @@
+RewriteEngine On
+# RewriteBase /joker-peintre.fr/
+
+# ─── Fichiers et dossiers physiques servis directement ───────────────────────
+# index.php racine pointe sur bootstrap.php (voir index.php)
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# ─── Admin : fichiers .php existants encore servis directement ───────────────
+RewriteCond %{REQUEST_URI} ^/joker-peintre.fr/admin/
+RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} -f
+RewriteRule ^ - [L]
+
+# ─── MVC Front Controller : toutes les autres requêtes → bootstrap.php ───────
+RewriteRule ^ bootstrap.php [L]
