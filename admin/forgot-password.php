@@ -60,12 +60,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <style>
   *, *::before, *::after { box-sizing: border-box; }
   body { font-family: Arial, sans-serif; background: #111; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 16px; }
-  .card { background: #1c1c1c; padding: 32px; border-radius: 12px; width: 100%; max-width: 360px; }
-  h2 { margin: 0 0 6px; font-size: 1.3rem; }
+    .card{background:#1c1c1c;padding:32px;border-radius:14px;width:404px;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+    h2{margin: 0 0 85px;font-size: 22px;}
   .subtitle { color: #888; font-size: .85rem; margin-bottom: 24px; }
   label { display: block; font-size: .85rem; color: #ccc; margin-bottom: 4px; }
-  input[type=email] { width: 100%; padding: 10px 12px; background: #222; border: 1px solid #333; color: #fff; border-radius: 6px; font-size: .95rem; transition: border-color .2s; }
-  input[type=email]:focus { outline: none; border-color: #b11226; }
+  input[type=email],input[type=password]{width:100%;padding:10px 12px;background:#2a2a2a;border:1px solid #333;color:#fff;border-radius:8px;font-size:14px;box-sizing:border-box}
+    input:focus{outline:none;border-color:#b11226}
   button[type=submit] { width: 100%; padding: 11px; background: #b11226; color: #fff; border: none; border-radius: 6px; font-weight: bold; font-size: .95rem; margin-top: 16px; cursor: pointer; transition: background .2s; }
   button[type=submit]:hover { background: #d4142c; }
   .msg-success { background: rgba(40,167,69,.15); border: 1px solid #28a745; color: #6fcf97; padding: 12px 14px; border-radius: 6px; font-size: .85rem; margin-bottom: 16px; }
@@ -74,20 +74,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   .back:hover { color: #fff; }
   .icon { text-align: center; margin-bottom: 18px; }
   .icon svg { width: 48px; height: 48px; }
+      h2 img {
+        height: 60px;
+        margin-right: 10px;
+        float: left;
+    }
+
+    h2 span {
+        float: left;
+        padding-top: 20px;
+        padding-left: 6px;
+    }
 </style>
 </head>
 <body>
 <div class="card">
-  <div class="icon">
+  <h2> <img src="/assets/logo.png" alt="artiCMS Logo"> <span>Mot de passe oublié</span></h2>
+  <div style="clear:both"></div>
+  <!--div class="icon">
     <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
       <circle cx="24" cy="24" r="23" stroke="#b11226" stroke-width="2"/>
       <path d="M24 14a5 5 0 0 1 5 5c0 3-3 4.5-3 7h-4c0-2.5 3-4 3-7a1 1 0 0 0-2 0" stroke="#b11226" stroke-width="2" stroke-linecap="round"/>
       <circle cx="24" cy="31" r="1.5" fill="#b11226"/>
       <path d="M17 28h2m12 0h-2" stroke="#b11226" stroke-width="1.5" stroke-linecap="round"/>
     </svg>
-  </div>
+  </div-->
 
-  <h2>Mot de passe oublié</h2>
   <p class="subtitle">Saisissez votre adresse email d'administrateur. Un lien de réinitialisation vous sera envoyé.</p>
 
   <?php if ($msg): ?>
