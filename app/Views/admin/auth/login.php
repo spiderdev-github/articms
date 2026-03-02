@@ -21,6 +21,10 @@
   </style>
 </head>
 <body>
+  <a href="dashboard.php" class="brand-link" >
+      <span class="brand-text font-weight-bold" style="font-size:1.4rem !important;"><img src="/assets/logo.png" alt="artiCMS Logo" style="height:40px; margin-right:10px;">artiCMS</span>
+    </a>
+
   <div class="card">
     <h2>Admin Login</h2>
     <?php if ($error ?? null): ?>
@@ -38,7 +42,7 @@
       <button class="btn-login" type="submit">Connexion</button>
     </form>
     <div class="forgot">
-      <a href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/admin/forgot-password">J'ai perdu mon mot de passe</a>
+      <a href="<?= defined('BASE_URL') ? BASE_URL : '' ?>/admin/forgot-password.php">J'ai perdu mon mot de passe</a>
     </div>
   </div>
 </body>

@@ -149,7 +149,7 @@ include __DIR__ . '/partials/header.php';
     </div><!-- /.card-body -->
 
     <div class="card-footer d-flex" style="gap:8px;">
-      <button type="submit" class="btn btn-success" onclick="serializeOrder()">
+      <button type="submit" class="btn btn-primary" onclick="serializeOrder()">
         <i class="fas fa-save"></i> Enregistrer
       </button>
       <a href="galleries.php" class="btn btn-secondary">

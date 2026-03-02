@@ -81,6 +81,7 @@
       background: rgba(99,120,255,.13) !important;
       color: #fff !important;
     }
+
     .nav-sidebar .nav-link:hover .nav-icon {
       color: #8b9dff !important;
     }
@@ -89,7 +90,6 @@
       background: linear-gradient(90deg, rgba(99,120,255,.28), rgba(99,120,255,.10)) !important;
       color: #fff !important;
       box-shadow: inset 3px 0 0 #6378ff !important;
-      width:calc(250px - 1rem * 2) !important;
     }
     .nav-sidebar .nav-link.active .nav-icon {
       color: #8b9dff !important;
@@ -105,6 +105,10 @@
     
     .dark-mode aside {
       background: #0f1221 !important;
+    }
+
+    .nav-sidebar .nav-link {
+      border-radius: 10px 0 0 10px!important;
     }
   </style>
 </head>

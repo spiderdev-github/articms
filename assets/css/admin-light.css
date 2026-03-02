@@ -647,3 +647,9 @@ body:not(.dark-mode) .card.border-secondary {
 .brand-text{
     font-size: 1.5rem !important;
 }
+
+.card .card-header::after {
+  display: block;
+  clear: both;
+  content: none !important;
+}

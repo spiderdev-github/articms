@@ -285,9 +285,9 @@ include __DIR__ . '/partials/header.php';
 <?php else: ?>
 <!-- ====================================================== FORMULAIRE (new / edit) -->
 <div class="row justify-content-center">
-  <div class="col-lg-9">
+  <div class="col-lg-12">
 
-    <div class="mb-3">
+    <div class="mb-3" style="text-align:right;">
       <a href="cms-pages.php" class="btn btn-sm btn-outline-secondary">
         <i class="fas fa-arrow-left mr-1"></i> Retour à la liste
       </a>
