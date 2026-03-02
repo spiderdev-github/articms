@@ -103,6 +103,45 @@ if (!file_exists($manifestPath)) {
 $manifest = json_decode(file_get_contents($manifestPath), true) ?? [];
 
 /* ──────────────────────────────────────────────────────────────────────── */
+/* 3b. Détection de conflits de configuration (si restore_config)           */
+/* ──────────────────────────────────────────────────────────────────────── */
+if ($restoreConfig && empty($_POST['config_confirmed'])) {
+    $backupConfigPath = $baseDir . '/config.php';
+    if (file_exists($backupConfigPath)) {
+        $currentCfg = _impParseConfigValues($root . '/includes/config.php');
+        $backupCfg  = _impParseConfigValues($backupConfigPath);
+
+        $watchedKeys = ['BASE_URL', 'DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASS'];
+        $diffs = [];
+        foreach ($watchedKeys as $key) {
+            $cur = $currentCfg[$key] ?? '';
+            $bak = $backupCfg[$key] ?? '';
+            if ($cur !== $bak) {
+                $diffs[$key] = ['current' => $cur, 'backup' => $bak];
+            }
+        }
+
+        if (!empty($diffs)) {
+            $token = bin2hex(random_bytes(16));
+            $_SESSION['import_pending'] = [
+                'token'          => $token,
+                'extractDir'     => $extractDir,
+                'baseDir'        => $baseDir,
+                'restoreDb'      => $restoreDb,
+                'restoreUploads' => $restoreUploads,
+                'restoreThemes'  => $restoreThemes,
+                'restoreConfig'  => $restoreConfig,
+                'restoreImages'  => $restoreImages,
+                'diffs'          => $diffs,
+                'expires'        => time() + 600,
+            ];
+            header('Location: ../settings.php?tab=backup&import_confirm=' . $token);
+            exit;
+        }
+    }
+}
+
+/* ──────────────────────────────────────────────────────────────────────── */
 /* 4. Restauration                                                          */
 /* ──────────────────────────────────────────────────────────────────────── */
 $log = [];
@@ -232,6 +271,26 @@ function _impFail(string $msg): never
     $_SESSION['flash'] = ['type' => 'danger', 'msg' => $msg];
     header('Location: ../settings.php?tab=backup');
     exit;
+}
+
+/**
+ * Extrait les valeurs define() d'un config.php ArtiCMS.
+ * Retourne un tableau ['CONSTANTE' => 'valeur'].
+ */
+function _impParseConfigValues(string $file): array
+{
+    if (!file_exists($file)) return [];
+    $content = file_get_contents($file);
+    $values  = [];
+    // Capture define('KEY', 'value') avec guillemets simples ou doubles
+    preg_match_all(
+        "/define\s*\(\s*['\"]([^'\"]+)['\"]\s*,\s*['\"]([^'\"]*)['\"]\s*\)/",
+        $content, $matches, PREG_SET_ORDER
+    );
+    foreach ($matches as $m) {
+        $values[$m[1]] = $m[2];
+    }
+    return $values;
 }
 
 /** Cherche le répertoire racine dans l'archive extraite (peut être un sous-dossier). */

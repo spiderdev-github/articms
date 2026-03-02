@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../includes/db.php';
+require_once __DIR__ . '/../../includes/settings.php';
 require_once __DIR__ . '/../auth.php';
 requirePermission('themes');
 
@@ -10,7 +11,7 @@ validateCsrf($_POST['csrf_token'] ?? '');
 
 // ─── Liste blanche stricte des fichiers autorisés ────────────────────────────
 $allowed = [
-    'index.php',
+    'home.php',
     'page.php',
     '_contact',
     '_realisations.php',
@@ -22,11 +23,26 @@ if (!in_array($file, $allowed, true)) {
     header('Location: ../page-editor.php?error=forbidden'); exit;
 }
 
-$rootDir = __DIR__ . '/../../';
-$absPath = realpath($rootDir) . '/' . $file;
+$rootDir     = __DIR__ . '/../../';
+$activeTheme = getSetting('active_theme', 'default');
+
+// ─── Résolution du chemin réel selon la clé ─────────────────────────────────
+if ($file === 'home.php') {
+    $themeDir = realpath($rootDir . 'themes/' . $activeTheme . '/partials');
+    if (!$themeDir) {
+        // Le dossier n'existe pas encore, créer
+        $themeDirPath = rtrim(realpath($rootDir), '/') . '/themes/' . $activeTheme . '/partials';
+        mkdir($themeDirPath, 0755, true);
+        $themeDir = $themeDirPath;
+    }
+    $absPath = $themeDir . '/' . $file;
+} else {
+    $absPath = realpath($rootDir) . '/' . $file;
+}
 
 // Vérification supplémentaire : le fichier doit être dans le rootDir
-if (!str_starts_with($absPath, realpath($rootDir))) {
+$realRoot = realpath($rootDir);
+if (!str_starts_with($absPath, $realRoot)) {
     header('Location: ../page-editor.php?error=forbidden'); exit;
 }
 
@@ -47,7 +63,12 @@ if ($exitCode !== 0) {
 }
 
 // ─── Sauvegarde ──────────────────────────────────────────────────────────────
-file_put_contents($absPath, $content);
+$written = file_put_contents($absPath, $content);
+if ($written === false) {
+    if (session_status() === PHP_SESSION_NONE) session_start();
+    $_SESSION['flash'] = ['type' => 'danger', 'msg' => 'Impossible d\'écrire le fichier (vérifier les permissions) : ' . htmlspecialchars($absPath)];
+    header('Location: ../page-editor.php?file=' . urlencode($file) . '&error=syntax'); exit;
+}
 @chmod($absPath, 0664);
 
 // Invalider l'opcache

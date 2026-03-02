@@ -1,0 +1,153 @@
+{
+    "_comment": "Configuration de la page d'accueil — theme default. Ce fichier est la source de vérité des contenus.",
+    "_version": 1,
+    "seo": {
+        "meta_title": "Joker Peintre - Peinture & Décoration en Alsace",
+        "meta_description": "Entreprise de peinture en Alsace : intérieur, extérieur, isolation, crépi facade et mosaïque effet pierre. Devis gratuit rapide."
+    },
+    "sections": {
+        "hero": {
+            "enabled": true,
+            "kicker": "Votre artisan peintre en Alsace",
+            "title": "Finitions haut de gamme pour vos murs, facades et renovations",
+            "text": "Peinture intérieure et extérieure, isolation, rénovation, revêtements muraux, boiserie, décoration et mosaïques... Votre projet maitrisé de A à Z, avec une attention particulière aux détails et finitions",
+            "cta_primary": {
+                "label": "Demander un devis gratuit",
+                "url": "/contact"
+            },
+            "cta_secondary": {
+                "label": "Voir les prestations",
+                "url": "/prestations"
+            }
+        },
+        "badges": {
+            "enabled": true,
+            "items": [
+                "Devis rapide",
+                "Finitions propres",
+                "Intervention Alsace"
+            ]
+        },
+        "prestations_card": {
+            "enabled": true,
+            "card_title": "Nos prestations",
+            "card_subtitle": "Peinture & Décoration",
+            "items": [
+                {
+                    "title": "Peinture intérieure",
+                    "subtitle": "Tous types de travaux",
+                    "url": "/prestations/peinture-interieure-en-alsace",
+                    "enabled": true
+                },
+                {
+                    "title": "Isolation intérieure / extérieure",
+                    "subtitle": "Confort thermique, economies d'energie, reduction des nuisances sonores",
+                    "url": "/prestations/isolation-interieure-exterieure",
+                    "enabled": true
+                },
+                {
+                    "title": "Travaux de facade",
+                    "subtitle": "Rénovation, protection aux intempéries",
+                    "url": "/prestations/travaux-de-facade",
+                    "enabled": true
+                },
+                {
+                    "title": "Revêtements muraux et décoration",
+                    "subtitle": "Decoratif, relief, cachet premium",
+                    "url": "/prestations/revetements-muraux-et-decoration",
+                    "enabled": true
+                },
+                {
+                    "title": "Peinture exterieure",
+                    "subtitle": "Nettoyage, protection, tenue aux intemperies, rendu durable",
+                    "url": "/prestations/peinture-exterieure-en-alsace",
+                    "enabled": true
+                }
+            ],
+            "footer": {
+                "enabled": true,
+                "city_label": "Alsace - Bas-Rhin - Haut-Rhin",
+                "cta_label": "Devis",
+                "cta_url": "/contact"
+            }
+        },
+        "approche": {
+            "enabled": true,
+            "title": "Une approche premium, simple et transparente",
+            "text": "Préparation sérieuse, matériaux adaptés, exécution propre. L'objectif : un résultat net et durable.",
+            "cards": [
+                {
+                    "icon_variant": "default",
+                    "title": "Préparation des supports",
+                    "text": "Protection, rebouchage, ponçage et accroche. C'est la clé d'une finition haut de gamme."
+                },
+                {
+                    "icon_variant": "gold",
+                    "title": "Finition nette",
+                    "text": "Angles propres, uniformité, rendu régulier. Un travail qui se voit, sans surprises."
+                },
+                {
+                    "icon_variant": "default",
+                    "title": "Chantier maîtrisé",
+                    "text": "Organisation, respect des lieux, nettoyage. Vous retrouvez un espace impeccable."
+                }
+            ]
+        },
+        "realisations": {
+            "enabled": true,
+            "title": "Réalisations",
+            "text": "Découvre quelques projets récents en Alsace. Finition propre, rendu durable.",
+            "featured_realisation_id": null,
+            "gallery_cta": {
+                "label": "Voir la galerie",
+                "url": "/realisations"
+            }
+        },
+        "avant_apres": {
+            "enabled": true,
+            "title": "Avant / Après",
+            "subtitle": "La différence se voit dans les détails.",
+            "kpis": [
+                {
+                    "label": "Interieur",
+                    "type_key": "Peinture interieure"
+                },
+                {
+                    "label": "Facade",
+                    "type_key": "Crepi / Facade"
+                },
+                {
+                    "label": "Decor",
+                    "type_key": "Mosaique effet pierre"
+                }
+            ],
+            "cta": {
+                "label": "Voir le Avant/Après",
+                "url": "/realisations"
+            }
+        },
+        "local": {
+            "enabled": true,
+            "badge_title": "Zone d'intervention",
+            "title": "Joker Peintre intervient dans toute l'Alsace",
+            "intro": "Bas-Rhin et Haut-Rhin : peinture intérieure, extérieure, isolation, crépi facade et décoration.",
+            "cities": [
+                "Strasbourg",
+                "Haguenau",
+                "Selestat",
+                "Colmar",
+                "Mulhouse",
+                "Saint-Louis"
+            ]
+        },
+        "cta_devis": {
+            "enabled": true,
+            "title": "Besoin d'un devis ?",
+            "text": "Réponse rapide. Décris ton projet, surface, ville et délai.",
+            "cta_primary": {
+                "label": "Demander un devis",
+                "url": "/contact"
+            }
+        }
+    }
+}

@@ -15,7 +15,14 @@ $themeDir  = $themesDir . '/' . $themeId;
 // Sécurité : valider le fichier cible
 $allowedFiles = [
     'variables.css', 'style.css', 'responsive.css',
-    'partials/header.php', 'partials/footer.php', 'theme.json',
+    'partials/header.php', 
+    'partials/home.php',
+    'partials/realisations.php', 
+    'partials/contact.php', 
+    'partials/page.php', 
+    'partials/footer.php', 
+    'theme.json',
+    'partials/home.json'
 ];
 if (!$themeId || !in_array($file, $allowedFiles, true) || !is_dir($themeDir)) {
     header("Location: ../themes.php?notice=error"); exit;

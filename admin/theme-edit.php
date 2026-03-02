@@ -21,12 +21,17 @@ $themeName = $meta['name'] ?? $themeId;
 
 // ─── Liste des fichiers éditables ────────────────────────────────────────────
 $editableFiles = [
-    'variables.css'         => ['label' => 'variables.css',      'icon' => 'fa-palette',   'lang' => 'css'],
+    'variables.css'         => ['label' => 'variables.css',       'icon' => 'fa-palette',   'lang' => 'css'],
     'style.css'             => ['label' => 'style.css',           'icon' => 'fa-css3',      'lang' => 'css'],
     'responsive.css'        => ['label' => 'responsive.css',      'icon' => 'fa-mobile',    'lang' => 'css'],
+    'partials/home.php'     => ['label' => 'home.php',            'icon' => 'fa-home',       'lang' => 'php'],
+    // 'partials/realisations.php'     => ['label' => 'realisations.php',            'icon' => 'fa-images',       'lang' => 'php'],
+    // 'partials/contact.php'     => ['label' => 'contact.php',            'icon' => 'fa-envelope',       'lang' => 'php'],
+    // 'partials/page.php'     => ['label' => 'page.php',            'icon' => 'fa-file',       'lang' => 'php'],
     'partials/header.php'   => ['label' => 'header.php',          'icon' => 'fa-heading',   'lang' => 'php'],
     'partials/footer.php'   => ['label' => 'footer.php',          'icon' => 'fa-shoe-prints','lang' => 'php'],
     'theme.json'            => ['label' => 'theme.json',          'icon' => 'fa-info-circle','lang' => 'json'],
+    'partials/home.json'    => ['label' => 'home.json',           'icon' => 'fa-file-alt','lang' => 'json'],
 ];
 
 // ─── Fichier actif ────────────────────────────────────────────────────────────
@@ -89,9 +94,12 @@ include __DIR__ . '/partials/header.php';
   <div class="col-md-3">
 
     <!-- Liste des fichiers -->
-    <div class="card card-body mb-3 p-2">
-      <small class="text-muted text-uppercase font-weight-bold mb-2 d-block px-1" style="font-size:10px;letter-spacing:.08em;">Fichiers</small>
-      <?php foreach ($editableFiles as $fname => $finfo):
+    <div class="card card-outline card-primary mb-3">
+      <div class="card-header">
+        <h3 class="card-title" style="font-size:13px;"><i class="fas fa-folder-open mr-2"></i>Fichiers templates</h3>
+      </div>
+      <div class="card-body p-1">
+          <?php foreach ($editableFiles as $fname => $finfo):
         $fpath    = $themeDir . '/' . $fname;
         $exists   = file_exists($fpath);
         $isActive = ($fname === $activeFile);
@@ -102,12 +110,13 @@ include __DIR__ . '/partials/header.php';
         <i class="fas <?= $finfo['icon'] ?> fa-fw" style="font-size:12px;"></i>
         <span><?= $finfo['label'] ?></span>
         <?php if (!$exists): ?>
-        <span class="badge badge-secondary ml-auto" style="font-size:9px;">nouveau</span>
+        <span class="badge badge-secondary ml-auto" style="font-size:9px;">absent</span>
         <?php endif; ?>
       </a>
       <?php endforeach; ?>
+      </div>
     </div>
-
+    
     <!-- Color pickers (uniquement si on édite variables.css) -->
     <?php if ($activeFile === 'variables.css' && !empty($colorVars)): ?>
     <div class="card card-body p-2">
@@ -125,7 +134,19 @@ include __DIR__ . '/partials/header.php';
       <small class="text-muted" style="font-size:10px;">Les changements mettent à jour le textarea. N'oublie pas d'enregistrer.</small>
     </div>
     <?php endif; ?>
-
+    
+     <!-- Aide raccourcis clavier -->
+    <div class="card card-body p-3" style="font-size:12px;">
+      <strong class="d-block mb-2 text-muted" style="letter-spacing:.05em;text-transform:uppercase;font-size:10px;">Raccourcis</strong>
+      <div class="mb-1"><kbd>Ctrl</kbd> + <kbd>S</kbd> — Enregistrer</div>
+      <div class="mb-1"><kbd>Tab</kbd> — Indenter (2 espaces)</div>
+      <div class="mb-1"><kbd>Shift</kbd>+<kbd>Tab</kbd> — Dés-indenter</div>
+      <!-- <div class="mt-3">
+        <a href="<?= htmlspecialchars($previewUrl) ?>" target="_blank" class="btn btn-sm btn-outline-info btn-block">
+          <i class="fas fa-external-link-alt mr-1"></i> Voir la page live
+        </a>
+      </div> -->
+    </div>
   </div>
 
   <!-- ══════ Colonne droite : éditeur ══════════════════════════════════════ -->

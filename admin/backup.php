@@ -70,362 +70,15 @@ include __DIR__ . '/partials/header.php';
     <!-- Nav tabs -->
     <ul class="nav nav-tabs mb-0" id="settingsTabs">
       <li class="nav-item">
-        <a class="nav-link <?= $activeTab === 'company' ? 'active' : '' ?>"
-           href="settings.php?tab=company">
-          <i class="fas fa-building mr-1"></i> Entreprise
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link <?= $activeTab === 'smtp' ? 'active' : '' ?>"
-           href="settings.php?tab=smtp">
-          <i class="fas fa-envelope mr-1"></i> SMTP
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link <?= $activeTab === 'recaptcha' ? 'active' : '' ?>"
-           href="settings.php?tab=recaptcha">
-          <i class="fas fa-shield-alt mr-1"></i> reCAPTCHA
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link <?= $activeTab === 'robots' ? 'active' : '' ?>"
-           href="settings.php?tab=robots">
-          <i class="fas fa-robot mr-1"></i> robots.txt
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link <?= $activeTab === 'sitemap' ? 'active' : '' ?>"
-           href="settings.php?tab=sitemap">
-          <i class="fas fa-sitemap mr-1"></i> Sitemap
+        <a class="nav-link active" href="backup.php">
+          <i class="fas fa-archive mr-1"></i> Sauvegarde
         </a>
       </li>
     </ul>
 
-    <div class="tab-content border border-top-0 rounded-bottom bg-dark p-4" style="max-width:763px">
-
-      <!-- ═══════════════ TAB ENTREPRISE ═══════════════ -->
-      <?php if ($activeTab === 'company'): ?>
-      <form method="POST" action="actions/cms-save.php">
-        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-        <input type="hidden" name="section" value="company">
-
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label>Nom de l'entreprise</label>
-            <input class="form-control" name="company_name" value="<?= gs('company_name', 'Joker Peintre') ?>">
-          </div>
-          <div class="form-group col-md-6">
-            <label>Région</label>
-            <input class="form-control" name="company_region" value="<?= gs('company_region', 'Alsace') ?>">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label>Téléphone <small class="text-muted">(format E.164 : +33…)</small></label>
-            <input class="form-control" name="company_phone" placeholder="+33783868622"
-                   value="<?= gs('company_phone', PHONE) ?>">
-          </div>
-          <div class="form-group col-md-6">
-            <label>Téléphone affiché <small class="text-muted">(ex : 07 83 86 86 22)</small></label>
-            <input class="form-control" name="company_phone_display"
-                   value="<?= gs('company_phone_display', PHONE_DISPLAY) ?>">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" class="form-control" name="company_email"
-                 value="<?= gs('company_email', EMAIL) ?>">
-        </div>
-
-        <div class="form-group">
-          <label>Adresse <small class="text-muted">(N° et rue)</small></label>
-          <input class="form-control" name="company_address" value="<?= gs('company_address') ?>">
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-md-3">
-            <label>Code postal</label>
-            <input class="form-control" name="company_zip" value="<?= gs('company_zip') ?>">
-          </div>
-          <div class="form-group col-md-9">
-            <label>Ville</label>
-            <input class="form-control" name="company_city" value="<?= gs('company_city') ?>">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>SIRET</label>
-          <input class="form-control" name="company_siret" value="<?= gs('company_siret') ?>">
-        </div>
-
-        <hr>
-        <h5 class="mb-3"><i class="fas fa-align-left mr-1 text-muted"></i> Footer</h5>
-
-        <div class="form-group">
-          <label>Tagline <small class="text-muted">(ex : Société de bâtiment – Peinture & Décoration)</small></label>
-          <input class="form-control" name="footer_tagline"
-                 value="<?= gs('footer_tagline', 'Société de bâtiment – Peinture & Décoration') ?>">
-        </div>
-
-        <div class="form-group">
-          <label>Zone d'intervention footer</label>
-          <input class="form-control" name="footer_zone"
-                 value="<?= gs('footer_zone', 'Intervention en Alsace') ?>">
-        </div>
-
-        <div class="alert alert-warning mt-2">
-          <i class="fas fa-exclamation-triangle mr-1"></i>
-          Ces informations remplacent les constantes de <code>config.php</code> sur les pages publiques.
-        </div>
-
-        <button class="btn btn-primary btn-lg">
-          <i class="fas fa-save mr-1"></i> Enregistrer
-        </button>
-      </form>
-
-      <?php elseif ($activeTab === 'smtp'): ?>
-      <form method="POST" action="actions/cms-save.php">
-        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-        <input type="hidden" name="section" value="smtp">
-
-        <div class="form-row">
-          <div class="form-group col-md-8">
-            <label>Serveur SMTP <small class="text-muted">(ex : smtp.ionos.fr)</small></label>
-            <input class="form-control" name="smtp_host"
-                   value="<?= gs('smtp_host', SMTP_HOST) ?>">
-          </div>
-          <div class="form-group col-md-4">
-            <label>Port <small class="text-muted">(587 STARTTLS / 465 SSL)</small></label>
-            <input type="number" class="form-control" name="smtp_port"
-                   value="<?= gs('smtp_port', SMTP_PORT) ?>">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label>Nom d'utilisateur SMTP</label>
-            <input class="form-control" name="smtp_user"
-                   value="<?= gs('smtp_user', SMTP_USER) ?>" autocomplete="off">
-          </div>
-          <div class="form-group col-md-6">
-            <label>Mot de passe SMTP</label>
-            <input type="password" class="form-control" name="smtp_pass"
-                   placeholder="<?= gs('smtp_pass') ? '••••••••' : 'Non défini' ?>"
-                   autocomplete="new-password">
-            <small class="text-muted">Laisser vide pour ne pas modifier le mot de passe.</small>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label>Adresse expéditeur <small class="text-muted">(From)</small></label>
-            <input type="email" class="form-control" name="smtp_from"
-                   value="<?= gs('smtp_from', SMTP_FROM) ?>">
-          </div>
-          <div class="form-group col-md-6">
-            <label>Nom expéditeur</label>
-            <input class="form-control" name="smtp_from_name"
-                   value="<?= gs('smtp_from_name', SMTP_FROM_NAME) ?>">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Email de réception des contacts</label>
-          <input type="email" class="form-control" name="smtp_contact_email"
-                 value="<?= gs('smtp_contact_email', CONTACT_EMAIL) ?>">
-          <small class="text-muted">Les formulaires de contact sont envoyés à cette adresse.</small>
-        </div>
-
-        <div class="alert alert-info mt-2 mb-3">
-          <i class="fas fa-info-circle mr-1"></i>
-          Ces valeurs remplacent celles de <code>includes/config.php</code> pour l'envoi des emails.
-        </div>
-
-        <button class="btn btn-warning btn-lg">
-          <i class="fas fa-save mr-1"></i> Enregistrer
-        </button>
-      </form>
-
-      <!-- ═══════════════ TAB RECAPTCHA ═══════════════ -->
-      <?php elseif ($activeTab === 'recaptcha'): ?>
-
-      <div class="alert alert-info">
-        <strong><i class="fas fa-info-circle mr-1"></i> Pas encore de compte reCAPTCHA ?</strong><br>
-        <ol class="mb-0 mt-2 pl-3">
-          <li>Aller sur <a href="https://www.google.com/recaptcha/admin/create" target="_blank">google.com/recaptcha/admin/create</a></li>
-          <li>Choisir <strong>reCAPTCHA v3</strong></li>
-          <li>Ajouter votre domaine (<code><?= str_replace(["http://", "https://"], "", BASE_URL) ?></code>)</li>
-          <li>Copier la <strong>clé de site</strong> et la <strong>clé secrète</strong> ci-dessous</li>
-        </ol>
-      </div>
-
-      <form method="POST" action="actions/cms-save.php">
-        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-        <input type="hidden" name="section" value="recaptcha">
-
-        <div class="form-group">
-          <label>Clé de site <small class="text-muted">(Site Key – côté public, visible dans le HTML)</small></label>
-          <input class="form-control font-monospace" name="captcha_site_key"
-                 placeholder="6Lxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                 value="<?= gs('captcha_site_key', CAPTCHA_SITE_KEY) ?>">
-        </div>
-
-        <div class="form-group">
-          <label>Clé secrète <small class="text-muted">(Secret Key – côté serveur uniquement)</small></label>
-          <input class="form-control font-monospace" name="captcha_secret_key"
-                 placeholder="6Lxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                 value="<?= gs('captcha_secret_key', CAPTCHA_SECRET_KEY) ?>">
-        </div>
-
-        <div class="form-group" style="max-width:220px">
-          <label>Score minimum acceptable
-            <small class="text-muted">(0.0 = tout accepter · 1.0 = très strict)</small>
-          </label>
-          <input type="number" step="0.1" min="0" max="1" class="form-control" name="captcha_min_score"
-                 value="<?= gs('captcha_min_score', CAPTCHA_MIN_SCORE) ?>">
-          <small class="text-muted">Recommandé : <strong>0.5</strong></small>
-        </div>
-
-        <div class="alert alert-warning mt-2">
-          <i class="fas fa-exclamation-triangle mr-1"></i>
-          Ces valeurs remplacent celles de <code>includes/config.php</code>.
-          Mettre la clé de site à vide désactive reCAPTCHA (score ignoré, tous les formulaires passés).
-        </div>
-
-        <button class="btn btn-primary btn-lg">
-          <i class="fas fa-save mr-1"></i> Enregistrer
-        </button>
-      </form>
-
-      <?php endif; ?>
-
-      <!-- ═══════════════ TAB ROBOTS.TXT ═══════════════ -->
-      <?php if ($activeTab === 'robots'): ?>
-      <form method="POST" action="actions/cms-save.php">
-        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-        <input type="hidden" name="section" value="robots">
-
-        <div class="form-group">
-          <label class="font-weight-bold">Contenu de <code>robots.txt</code></label>
-          <small class="form-text text-muted mb-2">
-            Fichier servi à l'URL <a href="<?= BASE_URL ?>/robots.txt" target="_blank" class="text-info"><?= BASE_URL ?>/robots.txt</a>
-          </small>
-          <?php if (!is_writable($robotsPath)): ?>
-          <div class="alert alert-danger py-2">
-            <i class="fas fa-lock mr-1"></i> Le fichier <code>robots.txt</code> n'est pas accessible en écriture par le serveur web.
-          </div>
-          <?php endif; ?>
-
-          <div class="mb-2 d-flex" style="gap:6px;">
-            <button type="button" class="btn btn-sm btn-outline-danger"
-                    onclick="setRobotsPreset('disallow-all')"
-                    title="Bloque tous les robots (désindexation complète)">
-              <i class="fas fa-ban mr-1"></i> Disallow all
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-success"
-                    onclick="setRobotsPreset('allow-all')"
-                    title="Autorise tous les robots">
-              <i class="fas fa-check mr-1"></i> Allow all
-            </button>
-          </div>
-
-          <textarea id="robotsTextarea" name="robots_content" class="form-control font-monospace"
-                    rows="16" style="font-size:13px;line-height:1.6;background:#1a1d23;color:#e0e4ef;border-color:#3a3d4a;"
-                    spellcheck="false"><?= htmlspecialchars($robotsContent) ?></textarea>
-        </div>
-
-        <script>
-        const ROBOTS_PRESETS = {
-          'disallow-all': "User-agent: *\nDisallow: /\n",
-          'allow-all':    "User-agent: *\nAllow: /\nDisallow: /admin/\n\nSitemap: https://joker-peintre.fr/sitemap.xml\n"
-        };
-        function setRobotsPreset(key) {
-          if (!confirm('Remplacer le contenu actuel par ce préréglage ?')) return;
-          document.getElementById('robotsTextarea').value = ROBOTS_PRESETS[key];
-        }
-        </script>
-
-        <div class="alert alert-info py-2" style="font-size:12px;">
-          <i class="fas fa-info-circle mr-1"></i>
-          Exemples : <code>Disallow: /admin/</code> &middot; <code>Disallow: /includes/</code> &middot; <code>Sitemap: https://joker-peintre.fr/sitemap.xml</code>
-        </div>
-
-        <div class="d-flex" style="gap:8px;">
-          <button class="btn btn-primary">
-            <i class="fas fa-save mr-1"></i> Enregistrer
-          </button>
-          <a href="<?= BASE_URL ?>/robots.txt" target="_blank" class="btn btn-secondary">
-            <i class="fas fa-external-link-alt mr-1"></i> Voir le fichier
-          </a>
-        </div>
-      </form>
-      <?php endif; ?>
-
-      <!-- ═══════════════ TAB SITEMAP ═══════════════ -->
-      <?php if ($activeTab === 'sitemap'): ?>
-      <form method="POST" action="actions/cms-save.php">
-        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-        <input type="hidden" name="section" value="sitemap">
-
-        <div class="row">
-          <div class="col-md-7">
-            <div class="form-group">
-              <label class="font-weight-bold">Domaine du site <span class="text-danger">*</span></label>
-              <small class="form-text text-muted mb-1">URL de base utilisée dans chaque &lt;loc&gt; du sitemap.</small>
-              <input type="url" name="sitemap_domain" class="form-control"
-                     value="<?= htmlspecialchars($sitemapDomain) ?>"
-                     placeholder="https://joker-peintre.fr" required>
-            </div>
-          </div>
-          <div class="col-md-5">
-            <div class="form-group">
-              <label class="font-weight-bold">Fréquence de mise à jour</label>
-              <small class="form-text text-muted mb-1">Utilisée dans chaque &lt;changefreq&gt; du sitemap.</small>
-              <select name="sitemap_changefreq" class="form-control">
-                <?php foreach (['always','hourly','daily','weekly','monthly','yearly','never'] as $f): ?>
-                <option value="<?= $f ?>" <?= $sitemapFreq === $f ? 'selected' : '' ?>><?= ucfirst($f) ?></option>
-                <?php endforeach; ?>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="alert alert-secondary py-2 mb-3" style="font-size:12px;">
-          <i class="fas fa-info-circle mr-1"></i>
-          Le sitemap généré inclura automatiquement :
-          <strong>Accueil</strong> (priorité 1.0) +
-          <strong><?= (int)$sitemapPageCount ?> page(s) CMS publiée(s)</strong> +
-          pages statiques (contact, info).
-          Chemin : <code>sitemap.xml</code>
-          <?php if (file_exists($sitemapPath) && filesize($sitemapPath) > 0): ?>
-          &mdash; <a href="<?= BASE_URL ?>/sitemap.xml" target="_blank" class="text-info">Voir le fichier actuel</a>
-          <?php endif; ?>
-        </div>
-
-        <div class="d-flex" style="gap:8px;">
-          <button class="btn btn-primary">
-            <i class="fas fa-cogs mr-1"></i> Enregistrer &amp; Générer sitemap.xml
-          </button>
-          <?php if (file_exists($sitemapPath) && filesize($sitemapPath) > 0): ?>
-          <a href="<?= BASE_URL ?>/sitemap.xml" target="_blank" class="btn btn-secondary">
-            <i class="fas fa-external-link-alt mr-1"></i> Voir le sitemap
-          </a>
-          <?php endif; ?>
-        </div>
-
-        <?php if ($updated && $activeTab === 'sitemap' && file_exists($sitemapPath) && filesize($sitemapPath) > 0): ?>
-        <div class="mt-4">
-          <label class="font-weight-bold">Aperçu du sitemap généré</label>
-          <pre class="p-3 rounded" style="font-size:11px;max-height:320px;overflow:auto;background:#1a1d23;color:#a9b7d0;border:1px solid #3a3d4a;"><?= htmlspecialchars(file_get_contents($sitemapPath)) ?></pre>
-        </div>
-        <?php endif; ?>
-      </form>      
-      <?php endif; ?>
+    <div class="tab-content border border-top-0 rounded-bottom bg-dark p-4" style="max-width:908px">
 
       <!-- ═══════════════ TAB SAUVEGARDE ═══════════════ -->
-      <?php if ($activeTab === 'backup'): ?>
 
       <?php if ($showImportConfirm && $importPending): ?>
       <?php
@@ -528,8 +181,8 @@ include __DIR__ . '/partials/header.php';
       <?php endif; ?>
 
       <!-- ─── EXPORT ─── -->
-      <div class="card bg-darker border-secondary mb-4" style="background:#1a1d23">
-        <div class="card-header d-flex align-items-center" style="background:#23272f;border-color:#3a3d4a">
+      <div class="card bg-darker border-secondary mb-4">
+        <div class="card-header d-flex align-items-center" >
           <i class="fas fa-download mr-2 text-primary"></i>
           <strong>Exporter une sauvegarde</strong>
         </div>
@@ -573,8 +226,8 @@ include __DIR__ . '/partials/header.php';
       </div>
 
       <!-- ─── IMPORT ─── -->
-      <div class="card bg-darker border-secondary" style="background:#1a1d23">
-        <div class="card-header d-flex align-items-center" style="background:#23272f;border-color:#3a3d4a">
+      <div class="card bg-darker border-secondary">
+        <div class="card-header d-flex align-items-center" style="">
           <i class="fas fa-upload mr-2 text-warning"></i>
           <strong>Importer une sauvegarde</strong>
         </div>
@@ -690,7 +343,6 @@ include __DIR__ . '/partials/header.php';
       }
       </script>
 
-      <?php endif; ?>
 
     </div><!-- /.tab-content -->
   </div>

@@ -108,67 +108,6 @@ $baSub = getSetting('realisations_before_after_subtitle', 'La difference se voit
 
 <main>
 
-<?php if (getSetting('section_hero_enabled','1')==='1'): ?>
-  <section class="hero">
-    <div class="container">
-      <div class="hero-grid">
-
-        <div>
-          <span class="kicker"><span class="dot"></span><b><?= htmlspecialchars($heroKicker) ?></b></span>
-
-          <h1><?= htmlspecialchars($heroTitle) ?></h1>
-          <p><?= htmlspecialchars($heroText) ?></p>
-
-          <div class="hero-actions">
-            <a class="btn btn-primary" href="<?= BASE_URL ?>/contact"><?= htmlspecialchars($heroCtaPrimary) ?></a>
-            <a class="btn btn-ghost" href="<?= BASE_URL ?>/prestations"><?= htmlspecialchars($heroCtaSecond) ?></a>
-            <a class="phone-pill" href="tel:<?= htmlspecialchars($cmsPhone) ?>"><em>Tel</em> <?= htmlspecialchars($cmsPhoneDisplay) ?></a>
-          </div>
-
-          <?php if (getSetting('section_badges_enabled','1')==='1'): ?>
-          <div class="trust-row">
-            <span class="badge"><i></i> <?= htmlspecialchars($trustBadge1) ?></span>
-            <span class="badge"><i></i> <?= htmlspecialchars($trustBadge2) ?></span>
-            <span class="badge"><i></i> <?= htmlspecialchars($trustBadge3) ?></span>
-          </div>
-          <?php endif; ?>
-        </div>
-
-        <?php if (getSetting('section_prestations_enabled','1')==='1'): ?>
-        <aside class="hero-card" aria-label="Prestations principales">
-          <div class="hero-card-inner">
-            <div class="mini-title">
-              <strong><?= htmlspecialchars($cardTitle) ?></strong>
-              <span><?= htmlspecialchars($cardSubtitle) ?></span>
-            </div>
-
-            <ul class="hero-list">
-              <?php foreach ($prestationsItems as $p): ?>
-              <?php if (empty($p['enabled'])) continue; ?>
-              <li>
-                <a href="<?= BASE_URL ?><?= htmlspecialchars($p['url'], ENT_QUOTES) ?>">
-                  <div>
-                    <b><?= htmlspecialchars($p['title']) ?></b>
-                    <small><?= htmlspecialchars($p['subtitle']) ?></small>
-                  </div>
-                  <span class="hero-list-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></span>
-                </a>
-              </li>
-              <?php endforeach; ?>
-            </ul>
-
-            <div class="hero-card-footer">
-              <span class="chip">Alsace - Bas-Rhin - Haut-Rhin</span>
-              <a class="btn btn-gold" href="<?= BASE_URL ?>/contact">Devis</a>
-            </div>
-          </div>
-        </aside>
-        <?php endif; // section_prestations_enabled ?>
-
-      </div>
-    </div>
-  </section>
-<?php endif; // section_hero_enabled ?>
 
 <?php if (getSetting('section_approche_enabled','1')==='1'): ?>
   <section class="section">

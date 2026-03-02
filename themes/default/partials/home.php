@@ -1,12 +1,17 @@
 <?php
 /**
  * Vue home — contenu principal de la page d'accueil.
- * Variables injectées par HomeController.
+ * Variables injectées par HomeController :
+ *   $settings, $cfg, $hero, $prestationsItems, $latestRealisations, $kpis,
+ *   $heroKicker, $heroTitle, $heroText, $heroCtaPrimary, $heroCtaSecond,
+ *   $homeTitle, $homeText
  *
  * @var \App\Models\SettingModel $settings
+ * @var array $cfg   — contenu de home.json (thème actif)
  * @var array|null $hero
  * @var array  $prestationsItems
  * @var array  $latestRealisations
+ * @var array  $kpis
  */
 
 $heroImg = '';
@@ -16,46 +21,74 @@ if (!empty($hero['cover_thumb'])) {
     $heroImg = BASE_URL . '/' . ltrim($hero['cover_image'], '/');
 }
 
-$heroTitle = $settings->get('home_hero_title', 'Finition premium pour vos projets de peinture');
-$heroText  = $settings->get('home_hero_text', 'Peinture interieure et exterieure, isolation, rénovation, revêtements muraux, boiserie, décoration et mosaïques... Votre projet maitrisé de A a Z, avec une attention particulière aux détails et finitions');
-$trustBadge1   = $settings->get('home_trust_badge1',   'Devis rapide');
-$trustBadge2   = $settings->get('home_trust_badge2',   'Finitions propres');
-$trustBadge3   = $settings->get('home_trust_badge3',   'Intervention Alsace');
-$approachTitle = $settings->get('home_approach_title', 'Une approche premium, simple et transparente');
-$approachText  = $settings->get('home_approach_text',  'Préparation sérieuse, matériaux adaptés, exécution propre. L\'objectif : un résultat net et durable.');
-$ctaDevisTitle = $settings->get('home_cta_devis_title','Besoin d\'un devis ?');
-$ctaDevisText  = $settings->get('home_cta_devis_text', 'Réponse rapide. Décris ton projet, surface, ville et délai.');
-$cmsPhone        = $settings->get('company_phone',        defined('PHONE')         ? PHONE         : '');
-$cmsPhoneDisplay = $settings->get('company_phone_display',defined('PHONE_DISPLAY') ? PHONE_DISPLAY : $cmsPhone);
-$section_realisations_enabled = $settings->get('section_realisations_enabled', '0') === '1';
-$baEnabled = $settings->get('realisations_before_after_enabled', '0') === '1';
-$section_hero_enabled = $settings->get('section_hero_enabled', '0') === '1';
-$section_badges_enabled = $settings->get('section_badges_enabled', '0') === '1';
-$section_prestations_enabled = $settings->get('section_prestations_enabled', '0') === '1';
-$section_approche_enabled = $settings->get('section_approche_enabled', '0') === '1';
-$section_cta_enabled = $settings->get('section_cta_enabled', '0') === '1';
-$section_local_enabled = $settings->get('section_local_enabled', '0') === '1';
-$homeTitle = $settings->get('home_realisations_title', 'Nos dernières réalisations');
-$homeText  = $settings->get('home_realisations_text', 'Découvre quelques projets récents en Alsace. Finition propre, rendu durable.');
-$baTitle    = $settings->get('realisations_before_after_title', 'Le Avant/Après, c\'est impressionnant');
-$baSub      = $settings->get('realisations_before_after_subtitle', 'Un mur abîmé, une façade défraîchie, une pièce à rafraîchir ? Découvre nos transformations les plus marquantes.');
-$home_prestations_card_title = $settings->get('home_prestations_card_title', 'Nos prestations');
-$home_prestations_card_subtitle = $settings->get('home_prestations_card_subtitle', 'Peinture & Décoration');
-$home_prestations_footer_enabled = $settings->get('home_prestations_footer_enabled', '0') === '1';
-$home_prestations_footer_city = $settings->get('home_prestations_footer_city', 'Alsace - Bas-Rhin - Haut-Rhin');
+// ── Lecture du JSON config ────────────────────────────────────────────────────
+$S = $cfg['sections'] ?? [];
 
+/** @param mixed $default */
+$sc = function (string $path, $default = '') use ($S) {
+    $node = $S;
+    foreach (explode('.', $path) as $k) {
+        if (is_array($node) && array_key_exists($k, $node)) {
+            $node = $node[$k];
+        } else {
+            return $default;
+        }
+    }
+    return $node ?? $default;
+};
+$sb = fn(string $path, bool $d = true): bool => (bool)$sc($path, $d);
 
-$home_approach_card1_title = $settings->get('home_approach_card1_title', 'Préparation sérieuse');
-$home_approach_card1_text  = $settings->get('home_approach_card1_text', 'Protection, rebouchage, ponçage et accroche. C\'est la clé d\'une finition haut de gamme.');
-$home_approach_card2_title = $settings->get('home_approach_card2_title', 'Finition nette');
-$home_approach_card2_text  = $settings->get('home_approach_card2_text', 'Angles propres, uniformité, rendu régulier. Un travail qui se voit, sans surprises.');
-$home_approach_card3_title = $settings->get('home_approach_card3_title', 'Chantier maîtrisé');
-$home_approach_card3_text  = $settings->get('home_approach_card3_text', 'Organisation, respect des lieux, nettoyage. Vous retrouvez un espace impeccable.');
+// Visibilité des sections
+$section_hero_enabled         = $sb('hero.enabled');
+$section_badges_enabled       = $sb('badges.enabled');
+$section_prestations_enabled  = $sb('prestations_card.enabled');
+$section_approche_enabled     = $sb('approche.enabled');
+$section_realisations_enabled = $sb('realisations.enabled');
+$baEnabled                    = $sb('avant_apres.enabled');
+$section_local_enabled        = $sb('local.enabled');
+$section_cta_enabled          = $sb('cta_devis.enabled');
 
-$home_local_title = $settings->get('home_local_title', 'Intervention locale en Alsace');
-$home_local_intro = $settings->get('home_local_intro', 'Bas-Rhin et Haut-Rhin : peinture interieure, exterieure, isolation, crepi facade et decoration. Pour un meilleur referencement local, cree ensuite des pages par ville (ex: Strasbourg, Colmar, Mulhouse).');
-$home_local_cities = $settings->get('home_local_cities', "Strasbourg, Haguenau, Selestat, Colmar, Mulhouse, Saint-Louis");
-$home_local_badge_title = $settings->get('home_local_badge_title', 'Zone d\'intervention');
+// Badges
+$trustBadge1 = $S['badges']['items'][0] ?? 'Devis rapide';
+$trustBadge2 = $S['badges']['items'][1] ?? 'Finitions propres';
+$trustBadge3 = $S['badges']['items'][2] ?? 'Intervention Alsace';
+
+// Approche
+$approachTitle = $sc('approche.title', 'Une approche premium, simple et transparente');
+$approachText  = $sc('approche.text',  '');
+$home_approach_card1_title = $S['approche']['cards'][0]['title'] ?? 'Préparation des supports';
+$home_approach_card1_text  = $S['approche']['cards'][0]['text']  ?? '';
+$home_approach_card2_title = $S['approche']['cards'][1]['title'] ?? 'Finition nette';
+$home_approach_card2_text  = $S['approche']['cards'][1]['text']  ?? '';
+$home_approach_card3_title = $S['approche']['cards'][2]['title'] ?? 'Chantier maîtrisé';
+$home_approach_card3_text  = $S['approche']['cards'][2]['text']  ?? '';
+
+// Prestations carte
+$home_prestations_card_title     = $sc('prestations_card.card_title',    'Nos prestations');
+$home_prestations_card_subtitle  = $sc('prestations_card.card_subtitle', 'Peinture & Décoration');
+$home_prestations_footer_enabled = $sb('prestations_card.footer.enabled');
+$home_prestations_footer_city    = $sc('prestations_card.footer.city_label', 'Alsace - Bas-Rhin - Haut-Rhin');
+
+// Avant/Après
+$baTitle = $sc('avant_apres.title',    'Avant / Après');
+$baSub   = $sc('avant_apres.subtitle', 'La différence se voit dans les détails.');
+
+// SEO Local
+$home_local_badge_title = $sc('local.badge_title', "Zone d'intervention");
+$home_local_title  = $sc('local.title', "Joker Peintre intervient dans toute l'Alsace");
+$home_local_intro  = $sc('local.intro',  '');
+// cities est un tableau dans le JSON (pas une chaîne CSV)
+$home_local_cities = is_array($S['local']['cities'] ?? null)
+    ? $S['local']['cities']
+    : array_filter(array_map('trim', explode(',', $S['local']['cities'] ?? 'Strasbourg, Haguenau, Colmar')));
+
+// CTA Devis
+$ctaDevisTitle = $sc('cta_devis.title', "Besoin d'un devis ?");
+$ctaDevisText  = $sc('cta_devis.text',  '');
+
+// Coordonnées entreprise : toujours depuis les settings globaux
+$cmsPhone        = $settings->get('company_phone',         defined('PHONE')         ? PHONE         : '');
+$cmsPhoneDisplay = $settings->get('company_phone_display', defined('PHONE_DISPLAY') ? PHONE_DISPLAY : $cmsPhone);
 ?>
 
 <main>
@@ -65,7 +98,8 @@ $home_local_badge_title = $settings->get('home_local_badge_title', 'Zone d\'inte
     <div class="container">
       <div class="hero-grid">
 
-        <?php if ($section_hero_enabled): ?>
+
+                <?php if ($section_hero_enabled): ?>
           <div>
             <span class="kicker"><span class="dot"></span><b><?= htmlspecialchars($heroKicker) ?></b></span>
             <h1><?= htmlspecialchars($heroTitle) ?></h1>
@@ -87,7 +121,7 @@ $home_local_badge_title = $settings->get('home_local_badge_title', 'Zone d\'inte
             <?php endif; ?>
           </div>
         <?php endif; ?>
-        
+
         <?php if ($section_prestations_enabled): ?>
           <aside class="hero-card" aria-label="Prestations principales">
             <div class="hero-card-inner">
@@ -255,7 +289,7 @@ $home_local_badge_title = $settings->get('home_local_badge_title', 'Zone d\'inte
             <?= htmlspecialchars($home_local_intro) ?>
           </p>
           <ul>
-            <?php foreach (explode(',', $home_local_cities) as $city): ?>
+            <?php foreach ($home_local_cities as $city): ?>
               <li><?= htmlspecialchars(trim($city)) ?></li>
             <?php endforeach; ?>
           </ul>

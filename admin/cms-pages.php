@@ -25,22 +25,77 @@ if ($editId > 0) {
     $mode = 'new';
 }
 
-$pages = $pdo->query("SELECT * FROM cms_pages ORDER BY parent_id IS NOT NULL, sort_order ASC, created_at DESC")->fetchAll();
+// ── Recherche, filtres & tri ─────────────────────────────────────────
+$search       = trim($_GET['q'] ?? '');
+$filterStatus = $_GET['status'] ?? '';
+$sort         = $_GET['sort'] ?? '';
+$dir          = strtolower($_GET['dir'] ?? 'asc') === 'desc' ? 'desc' : 'asc';
+
+$allowedSorts = ['title' => 'title', 'slug' => 'slug', 'is_published' => 'is_published', 'date' => 'COALESCE(updated_at, created_at)'];
+$sortCol      = isset($allowedSorts[$sort]) ? $allowedSorts[$sort] : '';
+
+$where  = ['1=1'];
+$params = [];
+if ($search !== '') {
+    $where[]  = '(title LIKE ? OR slug LIKE ? OR meta_title LIKE ?)';
+    $term     = "%$search%";
+    $params   = array_merge($params, [$term, $term, $term]);
+}
+if ($filterStatus === 'published') {
+    $where[] = 'is_published = 1';
+} elseif ($filterStatus === 'draft') {
+    $where[] = 'is_published = 0';
+}
+$whereStr = implode(' AND ', $where);
+
+// Toutes les pages (pour slugMap + parentPages)
+$allPages = $pdo->query("SELECT * FROM cms_pages ORDER BY parent_id IS NOT NULL, sort_order ASC, created_at DESC")->fetchAll();
+
+// Ordre SQL
+$isSorting   = $sortCol !== '';
+$orderSql    = $isSorting ? "$sortCol $dir" : 'parent_id IS NOT NULL, sort_order ASC, created_at DESC';
+
+// Pages filtrées pour l'affichage
+$stmt = $pdo->prepare("SELECT * FROM cms_pages WHERE $whereStr ORDER BY $orderSql");
+$stmt->execute($params);
+$pages = $stmt->fetchAll();
 
 // Pages racines disponibles comme parents (max 2 niveaux)
-$parentPages = array_filter($pages, function($p) use ($editId) {
+$parentPages = array_filter($allPages, function($p) use ($editId) {
     return $p['parent_id'] === null && $p['id'] !== $editId;
 });
 
 // Map id → slug pour l'aperçu URL en JS
 $slugMap = [];
-foreach ($pages as $p) { $slugMap[$p['id']] = $p['slug']; }
+foreach ($allPages as $p) { $slugMap[$p['id']] = $p['slug']; }
 
-// Liste hiérarchique : regrouper enfants sous parents
-$roots    = array_filter($pages, fn($p) => $p['parent_id'] === null);
-$children = [];
-foreach ($pages as $p) {
-    if ($p['parent_id'] !== null) $children[$p['parent_id']][] = $p;
+// Liste hiérarchique sur les pages filtrées
+// Si recherche/filtre/tri actif : affiche à plat (sinon, regroupe parents/enfants)
+$isFiltering = $search !== '' || $filterStatus !== '' || $isSorting;
+if ($isFiltering) {
+    $roots    = $pages;
+    $children = [];
+} else {
+    $roots    = array_filter($pages, fn($p) => $p['parent_id'] === null);
+    $children = [];
+    foreach ($pages as $p) {
+        if ($p['parent_id'] !== null) $children[$p['parent_id']][] = $p;
+    }
+}
+
+function cmsPagesSortLink(string $column, string $label, string $currentSort, string $currentDir): string {
+    $nextDir = ($currentSort === $column && $currentDir === 'asc') ? 'desc' : 'asc';
+    $params  = array_merge($_GET, ['sort' => $column, 'dir' => $nextDir]);
+    unset($params['edit'], $params['new']);
+    $url     = 'cms-pages.php?' . http_build_query($params);
+    if ($currentSort === $column) {
+        $icon = $currentDir === 'asc'
+            ? '<i class="fas fa-sort-up ml-1"></i>'
+            : '<i class="fas fa-sort-down ml-1"></i>';
+    } else {
+        $icon = '<i class="fas fa-sort ml-1 text-muted"></i>';
+    }
+    return '<a href="' . htmlspecialchars($url) . '" class="text-reset text-decoration-none" style="white-space:nowrap;">' . $label . $icon . '</a>';
 }
 
 /* ── Score SEO ──────────────────────────────────────────────────────────── */
@@ -92,113 +147,138 @@ include __DIR__ . '/partials/header.php';
 
 <?php if ($mode === 'list'): ?>
 <!-- ====================================================== LISTE -->
-<div class="row">
-  <div class="col-12">
-    <div class="card card-outline card-primary">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h3 class="card-title mb-0">
-          <i class="fas fa-file-alt mr-1"></i> Pages
-          <span class="badge badge-secondary ml-1"><?= count($pages) ?></span>
-        </h3>
-        <a href="cms-pages.php?new=1" class="btn btn-primary btn-sm">
-          <i class="fas fa-plus mr-1"></i> Nouvelle page
-        </a>
-      </div>
-      <div class="card-body p-0">
-        <?php if (empty($pages)): ?>
-        <div class="p-4 text-center text-muted">
-          <i class="fas fa-file-alt fa-2x mb-2 d-block"></i>
-          Aucune page créée. <a href="cms-pages.php?new=1">Créer la première page</a>.
-        </div>
-        <?php else: ?>
-        <table class="table table-hover mb-0">
-          <thead class="thead-dark">
-            <tr>
-              <th>Titre</th>
-              <th>Slug / URL</th>
-              <th>Statut</th>
-              <th>SEO</th>
-              <th>Date</th>
-              <th style="width:110px;"></th>
-            </tr>
-          </thead>
-          <tbody>
-          <?php
-          // Affiche parents puis leurs enfants (indentation)
-          foreach ($roots as $p):
-              $isChild = false;
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="m-0"><i class="fas fa-file-alt mr-2"></i>Pages du site</h4>
+  <a href="cms-pages.php?new=1" class="btn btn-primary btn-sm">
+    <i class="fas fa-plus mr-1"></i> Nouvelle page
+  </a>
+</div>
+
+<!-- Filtres -->
+<div class="card mb-3">
+  <div class="card-body py-2">
+    <form method="get" class="form-inline" style="gap:8px;flex-wrap:wrap;">
+      <input type="text" name="q" class="form-control form-control-sm" placeholder="Titre, slug…" value="<?= htmlspecialchars($search) ?>" style="min-width:220px;">
+      <select name="status" class="form-control form-control-sm">
+        <option value="">Tous statuts</option>
+        <option value="published" <?= $filterStatus === 'published' ? 'selected' : '' ?>>Publiée</option>
+        <option value="draft"     <?= $filterStatus === 'draft'     ? 'selected' : '' ?>>Brouillon</option>
+      </select>
+      <button class="btn btn-sm btn-secondary" type="submit"><i class="fas fa-search mr-1"></i>Filtrer</button>
+      <?php if ($search || $filterStatus): ?>
+        <a href="cms-pages.php" class="btn btn-sm btn-outline-secondary">Réinitialiser</a>
+      <?php endif; ?>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="m-0">
+      <?= count($pages) ?> page<?= count($pages) > 1 ? 's' : '' ?>
+      <?php if ($isFiltering): ?>
+        <small class="text-muted font-weight-normal">sur <?= count($allPages) ?> au total</small>
+      <?php endif; ?>
+    </h5>
+  </div>
+  <div class="card-body p-0">
+    <?php if (empty($pages)): ?>
+    <div class="p-4 text-center text-muted">
+      <i class="fas fa-file-alt fa-2x mb-2 d-block"></i>
+      Aucune page créée. <a href="cms-pages.php?new=1">Créer la première page</a>.
+    </div>
+    <?php else: ?>
+    <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="thead-dark">
+        <tr>
+          <th><?= cmsPagesSortLink('title',        'Titre',   $sort, $dir) ?></th>
+          <th><?= cmsPagesSortLink('slug',         'Slug / URL', $sort, $dir) ?></th>
+          <th><?= cmsPagesSortLink('is_published', 'Statut',  $sort, $dir) ?></th>
+          <th class="text-center">SEO</th>
+          <th><?= cmsPagesSortLink('date',         'Date',    $sort, $dir) ?></th>
+          <th style="width:110px;"></th>
+        </tr>
+      </thead>
+      <tbody>
+      <?php
+      foreach ($roots as $p):
+          if ($isFiltering) {
+              // Mode plat : chaque page affichée directement
+              $rows = [$p];
+          } else {
               $rows = [$p];
               if (!empty($children[$p['id']])) {
                   array_push($rows, ...array_map(fn($c) => array_merge($c, ['_child' => true]), $children[$p['id']]));
               }
-              foreach ($rows as $p):
-                  $child   = !empty($p['_child']);
-                  $fullUrl = $child ? ($slugMap[$p['parent_id']] . '/' . $p['slug']) : $p['slug'];
+          }
+          foreach ($rows as $p):
+              $child   = !empty($p['_child']) || ($isFiltering && $p['parent_id'] !== null);
+              $fullUrl = $p['parent_id'] ? ($slugMap[$p['parent_id']] . '/' . $p['slug']) : $p['slug'];
+      ?>
+      <tr>
+        <td class="align-middle">
+          <?php if ($child): ?>
+          <span class="text-muted" style="margin-right:6px;">↳</span>
+          <?php endif; ?>
+          <span class="font-weight-bold"><?= htmlspecialchars($p['title']) ?></span>
+        </td>
+        <td class="align-middle">
+          <code style="color:#f472b6;"><?= htmlspecialchars($fullUrl) ?></code><br>
+          <a href="<?= BASE_URL ?>/<?= htmlspecialchars($fullUrl) ?>" target="_blank" class="small text-muted">
+            <i class="fas fa-external-link-alt"></i> Voir
+          </a>
+        </td>
+        <td class="align-middle">
+          <?php if ($p['is_published']): ?>
+          <span class="badge badge-success">Publiée</span>
+          <?php else: ?>
+          <span class="badge badge-secondary">Brouillon</span>
+          <?php endif; ?>
+        </td>
+        <?php
+          $seo = seoScore($p);
+          $tips = [];
+          if (empty(trim($p['meta_title'] ?? ''))) $tips[] = 'Meta titre manquant';
+          elseif (mb_strlen($p['meta_title']) < 50 || mb_strlen($p['meta_title']) > 70) $tips[] = 'Meta titre hors longueur idéale (50-70)';
+          if (empty(trim($p['meta_description'] ?? ''))) $tips[] = 'Meta description manquante';
+          elseif (mb_strlen($p['meta_description']) < 120 || mb_strlen($p['meta_description']) > 160) $tips[] = 'Meta desc hors longueur idéale (120-160)';
+          if (empty(trim($p['h1'] ?? ''))) $tips[] = 'H1 manquant';
+          if (mb_strlen(strip_tags($p['content'] ?? '')) < 300) $tips[] = 'Contenu trop court';
+          $tooltip = implode(' · ', $tips);
+        ?>
+        <td class="align-middle text-center">
+          <span class="badge badge-<?= $seo['color'] ?>" title="<?= htmlspecialchars($tooltip) ?>"
+                style="font-size:13px;min-width:40px;cursor:default;">
+            <?= $seo['score'] ?>
+          </span>
+        </td>
+        <td class="align-middle" style="white-space:nowrap;font-size:12px;">
+          <?php
+            $dt = !empty($p['updated_at']) ? $p['updated_at'] : $p['created_at'];
+            $label = !empty($p['updated_at']) ? 'Modif.' : 'Créé';
+            echo '<small class="text-muted">' . $label . '</small><br><small>' . date('d/m/Y', strtotime($dt)) . '</small>';
           ?>
-          <tr>
-            <td class="align-middle">
-              <?php if ($child): ?>
-              <span class="text-muted" style="margin-right:6px;">↳</span>
-              <?php endif; ?>
-              <span class="font-weight-bold"><?= htmlspecialchars($p['title']) ?></span>
-            </td>
-            <td class="align-middle">
-              <code style="color:#f472b6;"><?= htmlspecialchars($fullUrl) ?></code><br>
-              <a href="<?= BASE_URL ?>/<?= htmlspecialchars($fullUrl) ?>" target="_blank" class="small text-muted">
-                <i class="fas fa-external-link-alt"></i> Voir
-              </a>
-            </td>
-            <td class="align-middle">
-              <?php if ($p['is_published']): ?>
-              <span class="badge badge-success">Publiée</span>
-              <?php else: ?>
-              <span class="badge badge-secondary">Brouillon</span>
-              <?php endif; ?>
-            </td>
-            <?php
-              $seo = seoScore($p);
-              $tips = [];
-              if (empty(trim($p['meta_title'] ?? ''))) $tips[] = 'Meta titre manquant';
-              elseif (mb_strlen($p['meta_title']) < 50 || mb_strlen($p['meta_title']) > 70) $tips[] = 'Meta titre hors longueur idéale (50-70)';
-              if (empty(trim($p['meta_description'] ?? ''))) $tips[] = 'Meta description manquante';
-              elseif (mb_strlen($p['meta_description']) < 120 || mb_strlen($p['meta_description']) > 160) $tips[] = 'Meta desc hors longueur idéale (120-160)';
-              if (empty(trim($p['h1'] ?? ''))) $tips[] = 'H1 manquant';
-              if (mb_strlen(strip_tags($p['content'] ?? '')) < 300) $tips[] = 'Contenu trop court';
-              $tooltip = implode(' · ', $tips);
-            ?>
-            <td class="align-middle text-center">
-              <span class="badge badge-<?= $seo['color'] ?>" title="<?= htmlspecialchars($tooltip) ?>"
-                    style="font-size:13px;min-width:40px;cursor:default;">
-                <?= $seo['score'] ?>
-              </span>
-            </td>
-            <td class="align-middle" style="white-space:nowrap;font-size:12px;color:#aaa;">
-              <?php
-                $dt = !empty($p['updated_at']) ? $p['updated_at'] : $p['created_at'];
-                $label = !empty($p['updated_at']) ? 'Modif.' : 'Créé';
-                echo $label . '<br><span style="color:#fff;font-size:13px;">' . date('d/m/Y', strtotime($dt)) . '</span>';
-              ?>
-            </td>
-            <td class="text-right align-middle" style="white-space:nowrap;">
-              <a href="cms-pages.php?edit=<?= $p['id'] ?>" class="btn btn-sm btn-outline-primary" title="Modifier">
-                <i class="fas fa-edit"></i>
-              </a>
-              <form method="POST" action="actions/page-delete.php" class="d-inline"
-                    onsubmit="return confirm('Supprimer &laquo; <?= htmlspecialchars(addslashes($p['title'])) ?> &raquo; ?')">
-                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-                <input type="hidden" name="id" value="<?= $p['id'] ?>">
-                <button class="btn btn-sm btn-outline-danger" title="Supprimer">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </form>
-            </td>
-          </tr>
-          <?php endforeach; endforeach; ?>
-          </tbody>
-        </table>
-        <?php endif; ?>
-      </div>
+        </td>
+        <td class="text-right align-middle" style="white-space:nowrap;">
+          <a href="cms-pages.php?edit=<?= $p['id'] ?>" class="btn btn-xs btn-outline-primary" title="Modifier">
+            <i class="fas fa-edit"></i>
+          </a>
+          <form method="POST" action="actions/page-delete.php" class="d-inline"
+                onsubmit="return confirm('Supprimer &laquo; <?= htmlspecialchars(addslashes($p['title'])) ?> &raquo; ?')">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+            <input type="hidden" name="id" value="<?= $p['id'] ?>">
+            <button class="btn btn-xs btn-outline-danger ml-1" title="Supprimer">
+              <i class="fas fa-trash"></i>
+            </button>
+          </form>
+        </td>
+      </tr>
+      <?php endforeach; endforeach; ?>
+      </tbody>
+    </table>
     </div>
+    <?php endif; ?>
   </div>
 </div>
 
@@ -347,12 +427,12 @@ tinymce.init({
     language: 'fr_FR',
 
     /* ---- Plugins ---- */
-    plugins: 'link lists image code table media wordcount visualblocks noneditable',
+    plugins: 'link lists image code table media wordcount visualblocks noneditable fullscreen',
 
     /* ---- Toolbar ---- */
     toolbar: [
         'undo redo | styleselect | bold italic | forecolor',
-        'alignleft aligncenter alignright | bullist numlist | outdent indent | table | link image media | code visualblocks | galerie formulaire'
+        'alignleft aligncenter alignright | bullist numlist | outdent indent | table | link image media | code visualblocks | galerie formulaire | fullscreen'
     ],
     toolbar_mode: 'wrap',
     menubar: false,

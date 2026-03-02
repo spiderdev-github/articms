@@ -4,9 +4,8 @@ require_once __DIR__ . '/auth.php';
 requirePermission('themes');
 require_once __DIR__ . '/../includes/settings.php';
 
-$csrf    = getCsrfToken();
-$saved   = isset($_GET['saved']);
-$section = $_GET['section'] ?? '';
+$csrf  = getCsrfToken();
+$saved = isset($_GET['saved']);
 
 $pdo = getPDO();
 // Liste des réalisations publiées pour le sélecteur
@@ -14,7 +13,41 @@ $realisationsList = $pdo->query(
   "SELECT id, title, city, type FROM realisations WHERE is_published=1 ORDER BY sort_order ASC, created_at DESC"
 )->fetchAll();
 
-// Prestations JSON
+// ── Résolution du JSON actif (par thème) ─────────────────────────────────────
+$activeTheme  = getSetting('active_theme', 'default');
+$jsonPath     = dirname(__DIR__) . '/themes/' . $activeTheme . '/partials/home.json';
+$fallbackPath = dirname(__DIR__) . '/themes/default/partials/home.json';
+
+if (!file_exists($jsonPath)) {
+    // Copier le fallback dans le thème actif si le répertoire existe
+    $themePartialsDir = dirname(__DIR__) . '/themes/' . $activeTheme . '/partials';
+    if (is_dir($themePartialsDir) && file_exists($fallbackPath)) {
+        @copy($fallbackPath, $jsonPath);
+    } else {
+        $jsonPath = $fallbackPath;
+    }
+}
+
+$cfg = file_exists($jsonPath) ? (json_decode(file_get_contents($jsonPath), true) ?? []) : [];
+$S   = $cfg['sections'] ?? [];
+
+/**
+ * Lecture sûre d'un chemin pointé dans un tableau associatif.
+ * Exemple : hcfg($S, 'hero.cta_primary.label', 'Devis')
+ */
+function hcfg(array $node, string $path, $default = '')
+{
+    foreach (explode('.', $path) as $k) {
+        if (is_array($node) && array_key_exists($k, $node)) {
+            $node = $node[$k];
+        } else {
+            return $default;
+        }
+    }
+    return $node ?? $default;
+}
+
+// ── Prestations ───────────────────────────────────────────────────────────────
 $defaultPrestations = [
   ['title'=>'Peinture intérieure',               'subtitle'=>'Tous types de travaux',                                                        'url'=>'/prestations/peinture-interieure-en-alsace',    'enabled'=>true],
   ['title'=>'Isolation intérieure / extérieure', 'subtitle'=>"Confort thermique, economies d'energie, reduction des nuisances sonores",   'url'=>'/prestations/isolation-interieure-exterieure',  'enabled'=>true],
@@ -22,68 +55,70 @@ $defaultPrestations = [
   ['title'=>'Revêtements muraux et décoration',  'subtitle'=>'Decoratif, relief, cachet premium',                                           'url'=>'/prestations/revetements-muraux-et-decoration', 'enabled'=>true],
   ['title'=>'Peinture exterieure',                'subtitle'=>'Nettoyage, protection, tenue aux intemperies, rendu durable',                   'url'=>'/prestations/peinture-exterieure-en-alsace',    'enabled'=>true],
 ];
-$prestationsRaw   = getSetting('home_prestations_items', '');
-$prestationsItems = $prestationsRaw ? (json_decode($prestationsRaw, true) ?: $defaultPrestations) : $defaultPrestations;
-
-// Charger toutes les valeurs actuelles
-$fields = [
-    // SEO
-    'home_meta_title'    => ['Titre SEO (balise title)', 'text', 'Joker Peintre - Peinture & Décoration en Alsace'],
-    'home_meta_desc'     => ['Meta description', 'textarea', 'Entreprise de peinture en Alsace : intérieur, extérieur, isolation, crépi facade et mosaïque effet pierre. Devis gratuit rapide.'],
-    // Hero
-    'home_hero_kicker'       => ['Kicker (texte au-dessus du titre)', 'text', 'Votre artisan peintre en Alsace'],
-    'home_hero_title'        => ['Titre principal (H1)', 'text', 'Finitions haut de gamme pour vos murs, facades et renovations'],
-    'home_hero_text'         => ['Texte sous le titre', 'textarea', 'Peinture intérieure et extérieure, isolation, rénovation, revêtements muraux, boiserie, décoration et mosaïques... Votre projet maitrisé de A à Z, avec une attention particulière aux détails et finitions'],
-    'home_hero_cta_primary'  => ['Bouton CTA principal', 'text', 'Demander un devis gratuit'],
-    'home_hero_cta_secondary'=> ['Bouton CTA secondaire', 'text', 'Voir les prestations'],
-    //Prestations
-    'home_prestations_card_subtitle' => ['Sous-titre de la carte Prestations', 'text', 'Peinture & Decoration'],
-    // Badges
-    'home_trust_badge1'  => ['Badge de confiance 1', 'text', 'Devis rapide'],
-    'home_trust_badge2'  => ['Badge de confiance 2', 'text', 'Finitions propres'],
-    'home_trust_badge3'  => ['Badge de confiance 3', 'text', 'Intervention Alsace'],
-    // Section réalisations
-    'home_realisations_title'        => ['Titre section réalisations', 'text', 'Réalisations'],
-    'home_realisations_text'         => ['Texte section réalisations', 'textarea', 'Découvre quelques projets récents en Alsace. Finition propre, rendu durable.'],
-    'home_featured_realisation_id'   => ['Réalisation mise en avant', 'select', ''],
-    // SEO local
-    'home_local_badge_title' => ['Titre du badge SEO local', 'text', 'Zone d\'intervention'],
-    'home_local_title'  => ['Titre SEO local', 'text', "Joker Peintre intervient dans toute l'Alsace"],
-    'home_local_intro'  => ['Texte d\'introduction', 'textarea', 'Bas-Rhin et Haut-Rhin : peinture intérieure, extérieure, isolation, crépi facade et décoration.'],
-    'home_local_cities' => ['Villes (séparées par virgule)', 'text', 'Strasbourg, Haguenau, Selestat, Colmar, Mulhouse, Saint-Louis'],
-    // Approche
-    'home_approach_title'       => ['Titre section approche', 'text', 'Une approche premium, simple et transparente'],
-    'home_approach_text'        => ['Texte section approche', 'textarea', "Préparation sérieuse, matériaux adaptés, exécution propre. L'objectif : un résultat net et durable."],
-    'home_approach_card1_title' => ['Bloc 1 — Titre', 'text', 'Préparation des supports'],
-    'home_approach_card1_text'  => ['Bloc 1 — Texte', 'textarea', "Protection, rebouchage, poncéage et accroche. C'est la clé d'une finition haut de gamme."],
-    'home_approach_card2_title' => ['Bloc 2 — Titre', 'text', 'Finition nette'],
-    'home_approach_card2_text'  => ['Bloc 2 — Texte', 'textarea', 'Angles propres, uniformité, rendu régulier. Un travail qui se voit, sans surprises.'],
-    'home_approach_card3_title' => ['Bloc 3 — Titre', 'text', 'Chantier maîtrisé'],
-    'home_approach_card3_text'  => ['Bloc 3 — Texte', 'textarea', 'Organisation, respect des lieux, nettoyage. Vous retrouvez un espace impeccable.'],
-    // CTA Devis
-    'home_cta_devis_title' => ['Titre du bandeau devis', 'text', "Besoin d'un devis ?"],
-    'home_cta_devis_text'  => ['Texte du bandeau devis', 'textarea', 'Réponse rapide. Décris ton projet, surface, ville et délai.'],
-    // Avant / Après
-    'realisations_before_after_enabled'  => ['Activer la section Avant/Après', 'toggle', '1'],
-    'realisations_before_after_title'    => ['Titre section Avant/Après', 'text', 'Avant / Après'],
-    'realisations_before_after_subtitle' => ['Sous-titre section Avant/Après', 'text', 'La différence se voit dans les détails.'],
-    // Visibilité des sections
-    'section_hero_enabled'         => ['Section Héro visible',          'toggle', '1'],
-    'section_prestations_enabled'  => ['Carte Prestations visible',     'toggle', '1'],
-    'section_badges_enabled'       => ['Badges de confiance visibles',  'toggle', '1'],
-    'section_approche_enabled'     => ['Section Approche visible',      'toggle', '1'],
-    'section_realisations_enabled' => ['Section Réalisations visible',  'toggle', '1'],
-    'section_ba_enabled'           => ['Carte Avant/Après visible',     'toggle', '1'],
-    'section_cta_enabled'          => ['Bandeau Devis visible',         'toggle', '1'],
-    'section_local_enabled'        => ['Bloc SEO Local visible',        'toggle', '1'],
-    'home_prestations_footer_enabled'    => ['Bloc présentation pied de page visible', 'toggle', '1'],
-    'home_prestations_footer_city' => ['Ville affichée dans le pied de page', 'text', 'Alsace - Bas-Rhin - Haut-Rhin']
-];
-
-$values = [];
-foreach ($fields as $key => $def) {
-    $values[$key] = getSetting($key, $def[2]);
+$prestationsItems = $S['prestations_card']['items'] ?? [];
+if (empty($prestationsItems)) {
+    $prestationsItems = $defaultPrestations;
 }
+
+// ── $values plate construite depuis le JSON ───────────────────────────────────
+// Conversion booléen JSON → '1'/'0' pour le formulaire HTML
+$bv = fn($v, $d = true): string => (is_bool($v) ? $v : (bool)$v) ? '1' : '0';
+
+$values = [
+    // SEO
+    'home_meta_title'    => $cfg['seo']['meta_title']        ?? 'Joker Peintre - Peinture & Décoration en Alsace',
+    'home_meta_desc'     => $cfg['seo']['meta_description']  ?? '',
+    // Hero
+    'home_hero_kicker'        => hcfg($S, 'hero.kicker',             'Votre artisan peintre en Alsace'),
+    'home_hero_title'         => hcfg($S, 'hero.title',              'Finitions haut de gamme pour vos murs, facades et renovations'),
+    'home_hero_text'          => hcfg($S, 'hero.text',               ''),
+    'home_hero_cta_primary'   => hcfg($S, 'hero.cta_primary.label',  'Demander un devis gratuit'),
+    'home_hero_cta_secondary' => hcfg($S, 'hero.cta_secondary.label','Voir les prestations'),
+    'section_hero_enabled'    => $bv(hcfg($S, 'hero.enabled', true)),
+    // Badges
+    'section_badges_enabled' => $bv(hcfg($S, 'badges.enabled', true)),
+    'home_trust_badge1'      => $S['badges']['items'][0] ?? 'Devis rapide',
+    'home_trust_badge2'      => $S['badges']['items'][1] ?? 'Finitions propres',
+    'home_trust_badge3'      => $S['badges']['items'][2] ?? 'Intervention Alsace',
+    // Prestations
+    'section_prestations_enabled'    => $bv(hcfg($S, 'prestations_card.enabled', true)),
+    'home_prestations_card_title'    => hcfg($S, 'prestations_card.card_title',    'Nos prestations'),
+    'home_prestations_card_subtitle' => hcfg($S, 'prestations_card.card_subtitle', 'Peinture & Décoration'),
+    'home_prestations_footer_enabled' => $bv(hcfg($S, 'prestations_card.footer.enabled', true)),
+    'home_prestations_footer_city'    => hcfg($S, 'prestations_card.footer.city_label', 'Alsace - Bas-Rhin - Haut-Rhin'),
+    // Approche
+    'section_approche_enabled'  => $bv(hcfg($S, 'approche.enabled', true)),
+    'home_approach_title'       => hcfg($S, 'approche.title', 'Une approche premium, simple et transparente'),
+    'home_approach_text'        => hcfg($S, 'approche.text', ''),
+    'home_approach_card1_title' => $S['approche']['cards'][0]['title'] ?? 'Préparation des supports',
+    'home_approach_card1_text'  => $S['approche']['cards'][0]['text']  ?? '',
+    'home_approach_card2_title' => $S['approche']['cards'][1]['title'] ?? 'Finition nette',
+    'home_approach_card2_text'  => $S['approche']['cards'][1]['text']  ?? '',
+    'home_approach_card3_title' => $S['approche']['cards'][2]['title'] ?? 'Chantier maîtrisé',
+    'home_approach_card3_text'  => $S['approche']['cards'][2]['text']  ?? '',
+    // Réalisations
+    'section_realisations_enabled'  => $bv(hcfg($S, 'realisations.enabled', true)),
+    'home_realisations_title'       => hcfg($S, 'realisations.title', 'Réalisations'),
+    'home_realisations_text'        => hcfg($S, 'realisations.text', ''),
+    'home_featured_realisation_id'  => (string)(hcfg($S, 'realisations.featured_realisation_id', '') ?? ''),
+    // Avant/Après
+    'realisations_before_after_enabled'  => $bv(hcfg($S, 'avant_apres.enabled', true)),
+    'realisations_before_after_title'    => hcfg($S, 'avant_apres.title',    'Avant / Après'),
+    'realisations_before_after_subtitle' => hcfg($S, 'avant_apres.subtitle', 'La différence se voit dans les détails.'),
+    'section_ba_enabled'                 => $bv(hcfg($S, 'avant_apres.enabled', true)),
+    // SEO Local
+    'section_local_enabled'  => $bv(hcfg($S, 'local.enabled', true)),
+    'home_local_badge_title' => hcfg($S, 'local.badge_title', "Zone d'intervention"),
+    'home_local_title'       => hcfg($S, 'local.title', "Joker Peintre intervient dans toute l'Alsace"),
+    'home_local_intro'       => hcfg($S, 'local.intro', ''),
+    'home_local_cities'      => is_array($S['local']['cities'] ?? null)
+                                    ? implode(', ', $S['local']['cities'])
+                                    : ($S['local']['cities'] ?? 'Strasbourg, Haguenau, Colmar'),
+    // CTA Devis
+    'section_cta_enabled'  => $bv(hcfg($S, 'cta_devis.enabled', true)),
+    'home_cta_devis_title' => hcfg($S, 'cta_devis.title', "Besoin d'un devis ?"),
+    'home_cta_devis_text'  => hcfg($S, 'cta_devis.text',  ''),
+];
 
 $pageTitle = 'Gestion de la page d\'accueil';
 require_once __DIR__ . '/partials/header.php';
@@ -136,7 +171,7 @@ require_once __DIR__ . '/partials/header.php';
               </div>
             </div>
             <div class="card-footer d-flex flex-column" style="gap:6px;">
-              <a href="page-editor.php?file=index.php" class="btn btn-sm btn-outline-warning btn-block">
+              <a href="theme-edit.php?theme=<?= htmlspecialchars($activeTheme) ?>&file=partials/home.php" class="btn btn-sm btn-outline-warning btn-block">
                 <i class="fas fa-code mr-1"></i> Modifier le template HTML
               </a>
               <a href="<?= BASE_URL ?>/" target="_blank" class="btn btn-sm btn-outline-secondary btn-block">
@@ -270,14 +305,14 @@ require_once __DIR__ . '/partials/header.php';
                     <div class="form-group mb-0">
                       <label for="home_prestations_card_title">Titre de la carte</label>
                       <input type="text" id="home_prestations_card_title" name="home_prestations_card_title"
-                             class="form-control" value="<?= htmlspecialchars(getSetting('home_prestations_card_title','Prestations')) ?>">
+                             class="form-control" value="<?= htmlspecialchars($values['home_prestations_card_title']) ?>">
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="form-group mb-0">
                       <label for="home_prestations_card_subtitle">Sous-titre de la carte</label>
                       <input type="text" id="home_prestations_card_subtitle" name="home_prestations_card_subtitle"
-                             class="form-control" value="<?= htmlspecialchars(getSetting('home_prestations_card_subtitle','Peinture &amp; Decoration')) ?>">
+                             class="form-control" value="<?= htmlspecialchars($values['home_prestations_card_subtitle']) ?>">
                     </div>
                   </div>
                 </div>
@@ -347,7 +382,7 @@ require_once __DIR__ . '/partials/header.php';
                     <div class="form-group mb-0">
                       <label for="home_prestations_footer_city">Ville liste</label>
                       <input type="text" id="home_prestations_footer_city" name="home_prestations_footer_city"
-                            class="form-control" value="<?= htmlspecialchars(getSetting('home_prestations_footer_city','')) ?>">
+                            class="form-control" value="<?= htmlspecialchars($values['home_prestations_footer_city']) ?>">
                     </div>
                   </div>
                 </div>

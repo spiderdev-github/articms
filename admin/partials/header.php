@@ -25,22 +25,102 @@
   <!-- AdminLTE v3 style via CDN (Bootstrap 4) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/admin-light.css">
+
+  <link rel="icon" type="image/png" href="<?= BASE_URL ?>/assets/favicon/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="<?= BASE_URL ?>/assets/favicon/favicon.svg" />
+  <link rel="shortcut icon" href="<?= BASE_URL ?>/assets/favicon/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="<?= BASE_URL ?>/assets/favicon/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-title" content="artiCMS Admin" />
+  <link rel="manifest" href="<?= BASE_URL ?>/assets/favicon/site.webmanifest" />
 
   <style>
-    .brand-link{background:#0b0c10;}
-    .main-sidebar{background:#0b0c10;}
-    .content-wrapper{background:#0f1116;}
-    .card{border-radius:14px;}
-    .small-box{border-radius:14px;}
-    .badge{font-size:12px;}
-    .table td{vertical-align:middle;}
+    /* ── Sidebar dark (mode par défaut) ─────────────────────────────── */
+    .main-sidebar,
+    .main-sidebar .sidebar {
+      background: linear-gradient(180deg, #161b2e 0%, #0f1221 100%) !important;
+    }
+    .brand-link {
+      background: #16142c !important !important;
+      border-bottom: 1px solid rgba(99,120,255,.25) !important;
+      padding: 1rem 1.1rem !important;
+    }
+    .brand-text {
+      background: linear-gradient(90deg, #6378ff, #a78fff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-size: 1rem !important;
+      letter-spacing: .03em;
+    }
+    /* Sections headers */
+    .nav-header {
+      color: rgba(160,170,220,.45) !important;
+      font-size: 10px !important;
+      font-weight: 700 !important;
+      letter-spacing: .12em !important;
+      text-transform: uppercase !important;
+      padding: 18px 16px 6px !important;
+    }
+    /* Nav items */
+    .nav-sidebar .nav-item { padding: 1px 8px; }
+    .nav-sidebar .nav-link {
+      border-radius: 10px !important;
+      padding: .52rem .9rem !important;
+      color: rgba(200,210,240,.72) !important;
+      transition: background .18s, color .18s, box-shadow .18s !important;
+      position: relative;
+    }
+    .nav-sidebar .nav-link .nav-icon {
+      color: rgba(160,175,230,.55) !important;
+      width: 1.4rem;
+      font-size: .92rem;
+      transition: color .18s !important;
+    }
+    .nav-sidebar .nav-link:hover {
+      background: rgba(99,120,255,.13) !important;
+      color: #fff !important;
+    }
+    .nav-sidebar .nav-link:hover .nav-icon {
+      color: #8b9dff !important;
+    }
+    /* Active */
+    .nav-sidebar .nav-link.active {
+      background: linear-gradient(90deg, rgba(99,120,255,.28), rgba(99,120,255,.10)) !important;
+      color: #fff !important;
+      box-shadow: inset 3px 0 0 #6378ff !important;
+      width:calc(250px - 1rem * 2) !important;
+    }
+    .nav-sidebar .nav-link.active .nav-icon {
+      color: #8b9dff !important;
+    }
+    .nav-sidebar .nav-link.active p { color: #fff !important; font-weight: 600; }
+    /* Badge */images
+    .nav-sidebar .badge { font-size: 11px; }
+    /* ── Reste ────────────────────────────────────────────── */
+    .content-wrapper { background: #0f1116; }
+    .card { border-radius: 14px; }
+    .small-box { border-radius: 14px; }
+    .table td { vertical-align: middle; }
+    
+    .dark-mode aside {
+      background: #0f1221 !important;
+    }
   </style>
 </head>
 
-<body class="hold-transition sidebar-mini dark-mode">
+<body class="hold-transition sidebar-mini">
+<script>
+  // Applique dark-mode (défaut) ou le mode sauvegardé dès que <body> existe
+  (function(){
+    var m = localStorage.getItem('joker_dashboard_mode');
+    if (!m || m === 'dark') document.body.classList.add('dark-mode');
+    if (localStorage.getItem('joker_sidebar_state') === 'collapsed') document.body.classList.add('sidebar-collapse');
+  })();
+</script>
 <div class="wrapper">
 
-  <nav class="main-header navbar navbar-expand navbar-dark">
+  <nav class="main-header navbar navbar-expand navbar-dark" style="line-height: 26px; height: 73px;">
     <ul class="navbar-nav">
       <li class="nav-item">
         <a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
@@ -51,6 +131,11 @@
     </ul>
 
     <ul class="navbar-nav ml-auto">
+      <li class="nav-item">
+        <a href="#" id="db-panel-toggle" class="nav-link" title="Personnaliser l'affichage">
+          <i class="fas fa-sliders-h"></i>
+        </a>
+      </li>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown"
            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="gap:8px;">
@@ -80,8 +165,8 @@
   </nav>
 
   <aside class="main-sidebar elevation-4">
-    <a href="dashboard.php" class="brand-link">
-      <span class="brand-text font-weight-bold">JokerPeintre Admin</span>
+    <a href="dashboard.php" class="brand-link" >
+      <span class="brand-text font-weight-bold" style="font-size:1.4rem !important;"><img src="/assets/logo.png" alt="artiCMS Logo" style="height:40px; margin-right:10px;">artiCMS</span>
     </a>
 
     <div class="sidebar">
@@ -217,17 +302,17 @@
                   </a>
                 </li>
                 <li class="nav-item">
-                  <a href="homepage.php" class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'homepage.php' ? 'active' : '' ?>">
+                  <a href="homepage.php" class="nav-link">
                     <i class="far <?= basename($_SERVER['PHP_SELF']) === 'homepage.php' ? 'fa-dot-circle' : 'fa-circle' ?> nav-icon"></i>
                     <p>Page d'accueil</p>
                   </a>
                 </li>
-                <li class="nav-item">
-                  <a href="page-editor.php" class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'page-editor.php' ? 'active' : '' ?>">
+                <!-- <li class="nav-item">
+                  <a href="page-editor.php" class="nav-link">
                     <i class="far <?= basename($_SERVER['PHP_SELF']) === 'page-editor.php' ? 'fa-dot-circle' : 'fa-circle' ?> nav-icon"></i>
                     <p>Templates HTML</p>
                   </a>
-                </li>
+                </li> -->
               </ul>
             </li>
           <?php endif; ?>
@@ -239,12 +324,6 @@
                 <p>Réglages <i class="right fas fa-angle-left"></i></p>
               </a>
               <ul class="nav nav-treeview">
-                <li class="nav-item">
-                  <a href="settings.php?tab=dashboard" class="nav-link">
-                    <i class="far <?= (basename($_SERVER['PHP_SELF']) === 'settings.php' && ($_GET['tab'] ?? '') === 'dashboard') ? 'fa-dot-circle' : 'fa-circle' ?> nav-icon"></i>
-                    <p>Dashboard</p>
-                  </a>
-                </li>
                 <li class="nav-item">
                   <a href="settings.php?tab=company" class="nav-link">
                     <i class="far <?= (basename($_SERVER['PHP_SELF']) === 'settings.php' && ($_GET['tab'] ?? 'company') === 'company') ? 'fa-dot-circle' : 'fa-circle' ?> nav-icon"></i>
@@ -297,7 +376,14 @@
               <p>Mon profil</p>
             </a>
           </li>
-
+          <?php if (can('users')): ?>
+          <li class="nav-item">
+            <a href="backup.php" class="nav-link <?= basename($_SERVER['PHP_SELF']) === 'backup.php' ? 'active' : '' ?>">
+              <i class="nav-icon fas fa-archive"></i>
+              <p>Sauvegarde</p>
+            </a>
+          </li>
+          <?php endif; ?>
         </ul>
         </nav>
     </div>

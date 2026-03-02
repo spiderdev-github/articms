@@ -9,77 +9,35 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 validateCsrf($_POST['csrf_token'] ?? '');
 
-// Liste blanche des clés autorisées
-$allowed = [
-    'home_meta_title',
-    'home_meta_desc',
-    'home_hero_kicker',
-    'home_hero_title',
-    'home_hero_text',
-    'home_hero_cta_primary',
-    'home_hero_cta_secondary',
-    'home_trust_badge1',
-    'home_trust_badge2',
-    'home_trust_badge3',
-    'home_realisations_title',
-    'home_realisations_text',
-    'home_approach_title',
-    'home_approach_text',
-    'home_approach_card1_title',
-    'home_approach_card1_text',
-    'home_approach_card2_title',
-    'home_approach_card2_text',
-    'home_approach_card3_title',
-    'home_approach_card3_text',
-    'home_cta_devis_title',
-    'home_cta_devis_text',
-    'realisations_before_after_enabled',
-    'realisations_before_after_title',
-    'realisations_before_after_subtitle',
-    'home_featured_realisation_id',
-    'home_local_title',
-    'home_local_intro',
-    'home_local_cities',
-    'section_hero_enabled',
-    'section_prestations_enabled',
-    'section_badges_enabled',
-    'section_approche_enabled',
-    'section_realisations_enabled',
-    'section_ba_enabled',
-    'section_cta_enabled',
-    'section_local_enabled',
-    'home_prestations_footer_enabled',
-    'home_prestations_footer_city',
-    'home_local_badge_title'
-];
+// ── Résolution du JSON actif ──────────────────────────────────────────────────
+$activeTheme  = getSetting('active_theme', 'default');
+$jsonPath     = dirname(dirname(__DIR__)) . '/themes/' . $activeTheme . '/partials/home.json';
+$fallbackPath = dirname(dirname(__DIR__)) . '/themes/default/partials/home.json';
 
-$checkboxKeys = [
-    'realisations_before_after_enabled',
-    'section_hero_enabled',
-    'section_prestations_enabled',
-    'section_badges_enabled',
-    'section_approche_enabled',
-    'section_realisations_enabled',
-    'section_ba_enabled',
-    'section_cta_enabled',
-    'section_local_enabled',
-    'home_prestations_footer_enabled'
-];
-foreach ($allowed as $key) {
-    if (in_array($key, $checkboxKeys)) {
-        setSetting($key, isset($_POST[$key]) ? '1' : '0');
+if (!file_exists($jsonPath)) {
+    $themePartialsDir = dirname(dirname(__DIR__)) . '/themes/' . $activeTheme . '/partials';
+    if (is_dir($themePartialsDir) && file_exists($fallbackPath)) {
+        @copy($fallbackPath, $jsonPath);
     } else {
-        setSetting($key, trim($_POST[$key] ?? ''));
+        $jsonPath = $fallbackPath;
     }
 }
 
-// Prestations JSON
+// Charger l'ancienne config pour préserver les champs non gérés par ce formulaire
+$old  = file_exists($jsonPath) ? (json_decode(file_get_contents($jsonPath), true) ?? []) : [];
+$oldS = $old['sections'] ?? [];
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+$p  = fn(string $key, string $default = ''): string => trim($_POST[$key] ?? $default);
+$pb = fn(string $key): bool => !empty($_POST[$key]);
+
+// ── Prestations items ─────────────────────────────────────────────────────────
 $pIndices = $_POST['prestation_index'] ?? [];
 $pItems   = [];
 foreach ($pIndices as $i) {
     $i     = (int)$i;
     $title = trim($_POST['prestation_title'][$i] ?? '');
-    if ($title === '') continue; // ignorer les lignes vides
+    if ($title === '') continue;
     $pItems[] = [
         'title'    => $title,
         'subtitle' => trim($_POST['prestation_subtitle'][$i] ?? ''),
@@ -87,8 +45,118 @@ foreach ($pIndices as $i) {
         'enabled'  => isset($_POST['prestation_enabled'][$i]),
     ];
 }
-setSetting('home_prestations_items',       json_encode($pItems, JSON_UNESCAPED_UNICODE));
-setSetting('home_prestations_card_title',    trim($_POST['home_prestations_card_title']    ?? 'Prestations'));
-setSetting('home_prestations_card_subtitle', trim($_POST['home_prestations_card_subtitle'] ?? 'Peinture & Decoration'));
+
+// ── Build new JSON config ─────────────────────────────────────────────────────
+$cfg = [
+    '_comment' => $old['_comment'] ?? ('Configuration de la page d\'accueil — thème ' . $activeTheme . '. Ce fichier est la source de vérité des contenus.'),
+    '_version' => $old['_version'] ?? 1,
+
+    'seo' => [
+        'meta_title'       => $p('home_meta_title'),
+        'meta_description' => $p('home_meta_desc'),
+    ],
+
+    'sections' => [
+
+        'hero' => [
+            'enabled'       => $pb('section_hero_enabled'),
+            'kicker'        => $p('home_hero_kicker'),
+            'title'         => $p('home_hero_title'),
+            'text'          => $p('home_hero_text'),
+            'cta_primary'   => [
+                'label' => $p('home_hero_cta_primary', 'Demander un devis gratuit'),
+                'url'   => $oldS['hero']['cta_primary']['url']   ?? '/contact',
+            ],
+            'cta_secondary' => [
+                'label' => $p('home_hero_cta_secondary', 'Voir les prestations'),
+                'url'   => $oldS['hero']['cta_secondary']['url'] ?? '/prestations',
+            ],
+        ],
+
+        'badges' => [
+            'enabled' => $pb('section_badges_enabled'),
+            'items'   => array_values(array_filter([
+                $p('home_trust_badge1'),
+                $p('home_trust_badge2'),
+                $p('home_trust_badge3'),
+            ])),
+        ],
+
+        'prestations_card' => [
+            'enabled'       => $pb('section_prestations_enabled'),
+            'card_title'    => $p('home_prestations_card_title',    'Nos prestations'),
+            'card_subtitle' => $p('home_prestations_card_subtitle', 'Peinture & Décoration'),
+            'items'         => $pItems,
+            'footer'        => [
+                'enabled'    => $pb('home_prestations_footer_enabled'),
+                'city_label' => $p('home_prestations_footer_city', 'Alsace - Bas-Rhin - Haut-Rhin'),
+                'cta_label'  => $oldS['prestations_card']['footer']['cta_label'] ?? 'Devis',
+                'cta_url'    => $oldS['prestations_card']['footer']['cta_url']   ?? '/contact',
+            ],
+        ],
+
+        'approche' => [
+            'enabled' => $pb('section_approche_enabled'),
+            'title'   => $p('home_approach_title'),
+            'text'    => $p('home_approach_text'),
+            'cards'   => [
+                [
+                    'icon_variant' => $oldS['approche']['cards'][0]['icon_variant'] ?? 'default',
+                    'title'        => $p('home_approach_card1_title'),
+                    'text'         => $p('home_approach_card1_text'),
+                ],
+                [
+                    'icon_variant' => $oldS['approche']['cards'][1]['icon_variant'] ?? 'gold',
+                    'title'        => $p('home_approach_card2_title'),
+                    'text'         => $p('home_approach_card2_text'),
+                ],
+                [
+                    'icon_variant' => $oldS['approche']['cards'][2]['icon_variant'] ?? 'default',
+                    'title'        => $p('home_approach_card3_title'),
+                    'text'         => $p('home_approach_card3_text'),
+                ],
+            ],
+        ],
+
+        'realisations' => [
+            'enabled'                 => $pb('section_realisations_enabled'),
+            'title'                   => $p('home_realisations_title', 'Réalisations'),
+            'text'                    => $p('home_realisations_text'),
+            'featured_realisation_id' => ($v = $p('home_featured_realisation_id')) !== '' ? (int)$v : null,
+            'gallery_cta'             => $oldS['realisations']['gallery_cta'] ?? ['label' => 'Voir la galerie', 'url' => '/realisations'],
+        ],
+
+        'avant_apres' => [
+            'enabled'  => $pb('realisations_before_after_enabled'),
+            'title'    => $p('realisations_before_after_title', 'Avant / Après'),
+            'subtitle' => $p('realisations_before_after_subtitle'),
+            'kpis'     => $oldS['avant_apres']['kpis'] ?? [],
+            'cta'      => $oldS['avant_apres']['cta']  ?? ['label' => 'Voir le Avant/Après', 'url' => '/realisations'],
+        ],
+
+        'local' => [
+            'enabled'     => $pb('section_local_enabled'),
+            'badge_title' => $p('home_local_badge_title', "Zone d'intervention"),
+            'title'       => $p('home_local_title'),
+            'intro'       => $p('home_local_intro'),
+            'cities'      => array_values(array_filter(array_map('trim', explode(',', $p('home_local_cities'))))),
+        ],
+
+        'cta_devis' => [
+            'enabled'     => $pb('section_cta_enabled'),
+            'title'       => $p('home_cta_devis_title', "Besoin d'un devis ?"),
+            'text'        => $p('home_cta_devis_text'),
+            'cta_primary' => $oldS['cta_devis']['cta_primary'] ?? ['label' => 'Demander un devis', 'url' => '/contact'],
+        ],
+
+    ],
+];
+
+// ── Écriture du fichier JSON ───────────────────────────────────────────────────
+$json = json_encode($cfg, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+if (file_put_contents($jsonPath, $json) === false) {
+    header('Location: ../homepage.php?error=write'); exit;
+}
 
 header('Location: ../homepage.php?saved=1'); exit;
+

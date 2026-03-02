@@ -29,7 +29,12 @@ class View
      */
     public function render(string $template, array $data = []): void
     {
-        $file = $this->viewsPath . '/' . ltrim($template, '/') . '.php';
+        // Support des chemins absolus (surcharge par thème)
+        if ($template !== '' && $template[0] === '/') {
+            $file = $template;
+        } else {
+            $file = $this->viewsPath . '/' . ltrim($template, '/') . '.php';
+        }
 
         if (!file_exists($file)) {
             throw new \RuntimeException("Vue introuvable : $file");

@@ -1,0 +1,649 @@
+/*
+ * admin-light.css — Light mode complet pour le back-office
+ * S'applique quand <body> n'a PAS la classe .dark-mode
+ * ═══════════════════════════════════════════════════════════════
+ */
+
+/* ══════════════════════════════════════════════════════════════
+   Base / Body
+══════════════════════════════════════════════════════════════ */
+body:not(.dark-mode) {
+  background-color: #f0f2f5;
+  color: #343a40;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Navbar (top bar)
+══════════════════════════════════════════════════════════════ */
+body:not(.dark-mode) .main-header.navbar {
+  background-color: #ffffff;
+  border-bottom: 1px solid #dee2e6;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+body:not(.dark-mode) .main-header .nav-link {
+  color: #495057 !important;
+}
+body:not(.dark-mode) .main-header .nav-link:hover {
+  color: #212529 !important;
+  background: rgba(0,0,0,.05);
+  border-radius: 6px;
+}
+body:not(.dark-mode) .main-header .navbar-text {
+  color: #495057;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Brand / Logo
+══════════════════════════════════════════════════════════════ */
+body:not(.dark-mode) .brand-link {
+  background-color: #ffffff !important;
+  border-bottom: 1px solid rgba(99,120,255,.15) !important;
+  padding: 1rem 1.1rem !important;
+}
+body:not(.dark-mode) .brand-link:hover {
+  background-color: #f5f6ff !important;
+}
+body:not(.dark-mode) .brand-text {
+  background: linear-gradient(90deg, #4356d8, #7c5cbf) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  font-size: 1rem !important;
+  letter-spacing: .03em;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Sidebar
+══════════════════════════════════════════════════════════════ */
+body:not(.dark-mode) .main-sidebar,
+body:not(.dark-mode) .main-sidebar .sidebar {
+  background: #f7f8ff !important;
+  border-right: 1px solid rgba(99,120,255,.12) !important;
+  box-shadow: 2px 0 12px rgba(99,120,255,.07) !important;
+}
+
+/* Nav items */
+body:not(.dark-mode) .nav-sidebar .nav-item {
+  padding: 1px 8px;
+}
+body:not(.dark-mode) .nav-sidebar .nav-link {
+  color: #4a5068 !important;
+  border-radius: 10px !important;
+  padding: .52rem .9rem !important;
+  transition: background .18s, color .18s, box-shadow .18s !important;
+  position: relative;
+}
+body:not(.dark-mode) .nav-sidebar .nav-link .nav-icon {
+  color: #9199b8 !important;
+  width: 1.4rem;
+  transition: color .18s !important;
+}
+body:not(.dark-mode) .nav-sidebar .nav-link:hover,
+body:not(.dark-mode) .nav-sidebar .nav-link:focus {
+  background: rgba(99,120,255,.09) !important;
+  color: #2d3561 !important;
+}
+body:not(.dark-mode) .nav-sidebar .nav-link:hover .nav-icon,
+body:not(.dark-mode) .nav-sidebar .nav-link:focus .nav-icon {
+  color: #6378ff !important;
+}
+body:not(.dark-mode) .nav-sidebar .nav-link.active {
+  background: linear-gradient(90deg, rgba(99,120,255,.15), rgba(99,120,255,.05)) !important;
+  color: #3b4fc4 !important;
+  box-shadow: inset 3px 0 0 #6378ff !important;
+}
+body:not(.dark-mode) .nav-sidebar .nav-link.active .nav-icon {
+  color: #6378ff !important;
+}
+body:not(.dark-mode) .nav-sidebar > .nav-item > .nav-link p {
+  color: inherit !important;
+}
+body:not(.dark-mode) .nav-sidebar > .nav-item > .nav-link.active p {
+  color: #3b4fc4 !important;
+  font-weight: 600;
+}
+
+/* Tree menu (submenu) */
+body:not(.dark-mode) .nav-treeview {
+  background-color: transparent;
+}
+body:not(.dark-mode) .nav-treeview > .nav-item > .nav-link {
+  color: #6b7494 !important;
+  padding-left: 2.5rem;
+}
+body:not(.dark-mode) .nav-treeview > .nav-item > .nav-link:hover {
+  background: rgba(99,120,255,.07) !important;
+  color: #2d3561 !important;
+}
+body:not(.dark-mode) .nav-treeview > .nav-item > .nav-link.active {
+  background: rgba(99,120,255,.12) !important;
+  color: #3b4fc4 !important;
+  box-shadow: inset 3px 0 0 #6378ff !important;
+}
+
+/* Nav header labels */
+body:not(.dark-mode) .nav-header {
+  color: rgba(99,120,200,.5) !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: .12em !important;
+  text-transform: uppercase !important;
+  padding: 18px 16px 6px !important;
+}
+
+/* Sidebar search */
+body:not(.dark-mode) .sidebar-search-results,
+body:not(.dark-mode) .sidebar form .input-group .form-control {
+  background: #f8f9fa;
+  border-color: #dee2e6;
+  color: #343a40;
+}
+
+/* User panel */
+body:not(.dark-mode) .user-panel .info a {
+  color: #343a40;
+}
+body:not(.dark-mode) .user-panel {
+  border-bottom: 1px solid #dee2e6;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Content wrapper
+══════════════════════════════════════════════════════════════ */
+body:not(.dark-mode) .content-wrapper {
+  background-color: #f0f2f5 !important;
+  color: #343a40;
+}
+
+/* Content header */
+body:not(.dark-mode) .content-header h1 {
+  color: #212529;
+}
+body:not(.dark-mode) .content-header .breadcrumb {
+  background: transparent;
+}
+body:not(.dark-mode) .breadcrumb-item,
+body:not(.dark-mode) .breadcrumb-item a {
+  color: #6c757d;
+}
+body:not(.dark-mode) .breadcrumb-item.active {
+  color: #343a40;
+}
+body:not(.dark-mode) .breadcrumb-item + .breadcrumb-item::before {
+  color: #adb5bd;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Cards
+══════════════════════════════════════════════════════════════ */
+body:not(.dark-mode) .card {
+  background-color: #ffffff;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  color: #343a40;
+}
+body:not(.dark-mode) .card-header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e9ecef;
+  color: #343a40;
+}
+body:not(.dark-mode) .card-header .card-title {
+  color: #343a40;
+}
+body:not(.dark-mode) .card-body {
+  color: #343a40;
+}
+body:not(.dark-mode) .card-footer {
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  color: #6c757d;
+}
+body:not(.dark-mode) .card-outline.card-primary { border-top-color: #007bff; }
+body:not(.dark-mode) .card-outline.card-success { border-top-color: #28a745; }
+body:not(.dark-mode) .card-outline.card-warning { border-top-color: #ffc107; }
+body:not(.dark-mode) .card-outline.card-danger  { border-top-color: #dc3545; }
+body:not(.dark-mode) .card-outline.card-info    { border-top-color: #17a2b8; }
+body:not(.dark-mode) .card-outline.card-dark    { border-top-color: #343a40; }
+
+/* Card tools */
+body:not(.dark-mode) .btn-tool {
+  color: #adb5bd;
+}
+body:not(.dark-mode) .btn-tool:hover {
+  color: #343a40;
+}
+
+/* Collapsed card */
+body:not(.dark-mode) .card.collapsed-card .card-body,
+body:not(.dark-mode) .card.collapsed-card .card-footer {
+  display: none;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Small boxes (KPI)
+══════════════════════════════════════════════════════════════ */
+body:not(.dark-mode) .small-box {
+  box-shadow: 0 2px 8px rgba(0,0,0,.1);
+}
+body:not(.dark-mode) .small-box .inner h3,
+body:not(.dark-mode) .small-box .inner p {
+  color: #fff;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Tables
+══════════════════════════════════════════════════════════════ */
+body:not(.dark-mode) .table {
+  color: #343a40;
+}
+body:not(.dark-mode) .table thead th {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+  color: #495057;
+  font-weight: 600;
+}
+body:not(.dark-mode) .table td,
+body:not(.dark-mode) .table th {
+  border-color: #e9ecef;
+}
+body:not(.dark-mode) .table-hover tbody tr:hover {
+  background-color: #f0f4ff;
+}
+body:not(.dark-mode) .table-striped tbody tr:nth-of-type(odd) {
+  background-color: #f8f9fa;
+}
+body:not(.dark-mode) .table-bordered {
+  border-color: #dee2e6;
+}
+
+/* DataTables */
+body:not(.dark-mode) .dataTables_wrapper .dataTables_paginate .paginate_button {
+  color: #495057 !important;
+}
+body:not(.dark-mode) .dataTables_wrapper .dataTables_info,
+body:not(.dark-mode) .dataTables_wrapper .dataTables_length label,
+body:not(.dark-mode) .dataTables_wrapper .dataTables_filter label {
+  color: #6c757d;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Forms & Inputs
+══════════════════════════════════════════════════════════════ */
+body:not(.dark-mode) .form-control,
+body:not(.dark-mode) .custom-select {
+  background-color: #ffffff;
+  border-color: #ced4da;
+  color: #343a40;
+}
+body:not(.dark-mode) .form-control:focus,
+body:not(.dark-mode) .custom-select:focus {
+  background-color: #ffffff;
+  border-color: #80bdff;
+  color: #343a40;
+  box-shadow: 0 0 0 .2rem rgba(0,123,255,.15);
+}
+body:not(.dark-mode) .form-control::placeholder {
+  color: #adb5bd;
+}
+body:not(.dark-mode) .input-group-text {
+  background-color: #e9ecef;
+  border-color: #ced4da;
+  color: #495057;
+}
+body:not(.dark-mode) .form-control:disabled,
+body:not(.dark-mode) .form-control[readonly] {
+  background-color: #f8f9fa;
+}
+body:not(.dark-mode) label {
+  color: #495057;
+}
+body:not(.dark-mode) .form-text.text-muted {
+  color: #6c757d !important;
+}
+
+/* Select2 */
+body:not(.dark-mode) .select2-container--default .select2-selection--single {
+  background-color: #fff;
+  border-color: #ced4da;
+}
+body:not(.dark-mode) .select2-container--default .select2-selection--single .select2-selection__rendered {
+  color: #343a40;
+}
+body:not(.dark-mode) .select2-dropdown {
+  background-color: #fff;
+  border-color: #ced4da;
+}
+body:not(.dark-mode) .select2-results__option {
+  color: #343a40;
+}
+body:not(.dark-mode) .select2-results__option--highlighted {
+  background-color: #e8f0fe !important;
+  color: #1a73e8 !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Buttons
+══════════════════════════════════════════════════════════════ */
+body:not(.dark-mode) .btn-default,
+body:not(.dark-mode) .btn-secondary {
+  background-color: #f8f9fa;
+  border-color: #ced4da;
+  color: #343a40;
+}
+body:not(.dark-mode) .btn-default:hover,
+body:not(.dark-mode) .btn-secondary:hover {
+  background-color: #e9ecef;
+  color: #212529;
+}
+body:not(.dark-mode) .btn-outline-secondary {
+  color: #6c757d;
+  border-color: #6c757d;
+}
+body:not(.dark-mode) .btn-outline-secondary:hover {
+  background-color: #6c757d;
+  color: #fff;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Modals
+══════════════════════════════════════════════════════════════ */
+body:not(.dark-mode) .modal-content {
+  background-color: #ffffff;
+  color: #343a40;
+  border: 1px solid rgba(0,0,0,.1);
+}
+body:not(.dark-mode) .modal-header {
+  border-bottom: 1px solid #dee2e6;
+  background-color: #f8f9fa;
+}
+body:not(.dark-mode) .modal-header .modal-title {
+  color: #343a40;
+}
+body:not(.dark-mode) .modal-footer {
+  border-top: 1px solid #dee2e6;
+  background-color: #f8f9fa;
+}
+body:not(.dark-mode) .close {
+  color: #343a40;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Dropdowns
+══════════════════════════════════════════════════════════════ */
+body:not(.dark-mode) .dropdown-menu {
+  background-color: #ffffff;
+  border: 1px solid rgba(0,0,0,.1);
+  box-shadow: 0 4px 16px rgba(0,0,0,.12);
+}
+body:not(.dark-mode) .dropdown-item {
+  color: #343a40;
+}
+body:not(.dark-mode) .dropdown-item:hover,
+body:not(.dark-mode) .dropdown-item:focus {
+  background-color: #f0f2f5;
+  color: #212529;
+}
+body:not(.dark-mode) .dropdown-divider {
+  border-color: #dee2e6;
+}
+body:not(.dark-mode) .dropdown-header {
+  color: #6c757d;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Alerts
+══════════════════════════════════════════════════════════════ */
+body:not(.dark-mode) .alert {
+  border-radius: 10px;
+}
+body:not(.dark-mode) .alert-default {
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
+  color: #343a40;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Badges
+══════════════════════════════════════════════════════════════ */
+body:not(.dark-mode) .badge-secondary {
+  background-color: #6c757d;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   List groups
+══════════════════════════════════════════════════════════════ */
+body:not(.dark-mode) .list-group-item {
+  background-color: #ffffff;
+  border-color: #e9ecef;
+  color: #343a40;
+}
+body:not(.dark-mode) .list-group-item:hover {
+  background-color: #f8f9fa;
+}
+body:not(.dark-mode) .list-group-item-action {
+  color: #495057;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Nav tabs
+══════════════════════════════════════════════════════════════ */
+body:not(.dark-mode) .nav-tabs {
+  border-bottom-color: #dee2e6;
+}
+body:not(.dark-mode) .nav-tabs .nav-link {
+  color: #6c757d;
+}
+body:not(.dark-mode) .nav-tabs .nav-link:hover {
+  border-color: #e9ecef #e9ecef #dee2e6;
+  color: #343a40;
+}
+body:not(.dark-mode) .nav-tabs .nav-link.active {
+  background-color: #fff;
+  border-color: #dee2e6 #dee2e6 #fff;
+  color: #495057;
+}
+body:not(.dark-mode) .tab-content {
+  background-color: #fff !important;
+  border: 1px solid #dee2e6 !important;
+  border-top: none !important;
+  border-radius: 0 0 8px 8px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Pagination
+══════════════════════════════════════════════════════════════ */
+body:not(.dark-mode) .page-link {
+  background-color: #fff;
+  border-color: #dee2e6;
+  color: #007bff;
+}
+body:not(.dark-mode) .page-link:hover {
+  background-color: #e9ecef;
+  border-color: #dee2e6;
+  color: #0056b3;
+}
+body:not(.dark-mode) .page-item.active .page-link {
+  background-color: #007bff;
+  border-color: #007bff;
+  color: #fff;
+}
+body:not(.dark-mode) .page-item.disabled .page-link {
+  background-color: #fff;
+  border-color: #dee2e6;
+  color: #6c757d;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Text utilities
+══════════════════════════════════════════════════════════════ */
+body:not(.dark-mode) .text-muted {
+  color: #6c757d !important;
+}
+body:not(.dark-mode) h1, body:not(.dark-mode) h2,
+body:not(.dark-mode) h3, body:not(.dark-mode) h4,
+body:not(.dark-mode) h5, body:not(.dark-mode) h6 {
+  color: #212529;
+}
+body:not(.dark-mode) a {
+  color: #fff;
+}
+body:not(.dark-mode) a:hover {
+  color: #0056b3;
+}
+body:not(.dark-mode) hr {
+  border-color: #dee2e6;
+}
+body:not(.dark-mode) code {
+  background: #f0f2f5;
+  color: #e83e8c;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Sidebar mini overlay
+══════════════════════════════════════════════════════════════ */
+body:not(.dark-mode) .sidebar-mini.sidebar-collapse .main-sidebar:hover {
+  background-color: #ffffff !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Main footer
+══════════════════════════════════════════════════════════════ */
+body:not(.dark-mode) .main-footer {
+  background-color: #ffffff;
+  border-top: 1px solid #dee2e6;
+  color: #6c757d;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Control sidebar
+══════════════════════════════════════════════════════════════ */
+body:not(.dark-mode) .control-sidebar {
+  background-color: #ffffff;
+  color: #343a40;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Dashboard — panel settings overrides
+══════════════════════════════════════════════════════════════ */
+body:not(.dark-mode) #db-panel {
+  background: #ffffff;
+  border-left: 1px solid #dee2e6;
+  box-shadow: -4px 0 24px rgba(0,0,0,.12);
+}
+body:not(.dark-mode) .db-panel-header {
+  border-bottom: 1px solid #dee2e6;
+  color: #343a40;
+}
+body:not(.dark-mode) #db-panel-close { color: #6c757d; }
+body:not(.dark-mode) #db-panel-close:hover { color: #343a40; }
+body:not(.dark-mode) .db-panel-tabs {
+  border-bottom: 1px solid #dee2e6;
+}
+body:not(.dark-mode) .db-tab-btn { color: #6c757d; }
+body:not(.dark-mode) .db-tab-btn:hover { color: #343a40; }
+body:not(.dark-mode) .db-tab-btn.active { color: #1a73e8; border-bottom-color: #1a73e8; }
+
+body:not(.dark-mode) .db-toggle-item {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+}
+body:not(.dark-mode) .db-toggle-item:hover { background: #f0f2f5; }
+body:not(.dark-mode) .db-toggle-label { color: #495057; }
+body:not(.dark-mode) .db-toggle-switch { background: #ced4da; }
+body:not(.dark-mode) .db-toggle-switch::after { background: #adb5bd; }
+body:not(.dark-mode) .db-toggle-item:has(input:checked) .db-toggle-switch { background: #28a745; }
+body:not(.dark-mode) .db-toggle-item:has(input:checked) .db-toggle-switch::after { background: #fff; }
+body:not(.dark-mode) .db-toggle-item:has(input:not(:checked)) .db-toggle-label { color: #adb5bd; }
+
+body:not(.dark-mode) .db-kpi-footer { background: #f0f2f5; border-color: #dee2e6; color: #6c757d; }
+body:not(.dark-mode) .db-kpi-footer:hover { background: #e9ecef; color: #343a40; }
+body:not(.dark-mode) .db-kpi-sub { background: #f8f9fa; border-color: #dee2e6; }
+
+body:not(.dark-mode) .db-section-label { color: #9ca3af; }
+body:not(.dark-mode) .db-mode-btn { background: #f8f9fa; border-color: #dee2e6; color: #6c757d; }
+body:not(.dark-mode) .db-mode-btn:hover { background: #e9ecef; border-color: #ced4da; }
+body:not(.dark-mode) .db-mode-btn.active { border-color: #1a73e8; background: #e8f0fe; color: #1a73e8; }
+body:not(.dark-mode) .db-mode-name { color: inherit; }
+
+body:not(.dark-mode) .db-drag-handle { color: rgba(0,0,0,.2); }
+body:not(.dark-mode) .db-drag-handle:hover { color: rgba(0,0,0,.5) !important; }
+
+/* ══════════════════════════════════════════════════════════════
+   CRM / Devis specifics
+══════════════════════════════════════════════════════════════ */
+body:not(.dark-mode) .info-box {
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+body:not(.dark-mode) .info-box-text,
+body:not(.dark-mode) .info-box-number {
+  color: #343a40;
+}
+body:not(.dark-mode) .timeline > li > .timeline-item {
+  background: #fff;
+  border: 1px solid #dee2e6;
+}
+body:not(.dark-mode) .timeline > li > .timeline-item > .time {
+  color: #6c757d;
+}
+body:not(.dark-mode) .timeline > li > .timeline-item > .timeline-header {
+  border-bottom: 1px solid #dee2e6;
+}
+body:not(.dark-mode) .callout {
+  background: #f8f9fa;
+  border-color: #dee2e6;
+  color: #343a40;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Scrollbar (webkit)
+══════════════════════════════════════════════════════════════ */
+body:not(.dark-mode) ::-webkit-scrollbar { width: 6px; height: 6px; }
+body:not(.dark-mode) ::-webkit-scrollbar-track { background: #f0f2f5; }
+body:not(.dark-mode) ::-webkit-scrollbar-thumb { background: #ced4da; border-radius: 3px; }
+body:not(.dark-mode) ::-webkit-scrollbar-thumb:hover { background: #adb5bd; }
+
+
+
+body:not(.dark-mode) .table-dark > tbody > tr > td,
+body:not(.dark-mode) .table-dark > tbody > tr > th,
+body:not(.dark-mode) .table-dark > tbody > tr > th 
+{
+    background-color: #f8f9fa;
+}
+
+body:not(.dark-mode) .table-dark > tbody > tr:hover > td
+{
+    background-color: #f2f2f2;
+}
+
+
+body:not(.dark-mode) a.btn-outline-primary {
+    color: #007bff;
+}
+
+body:not(.dark-mode) a.btn-outline-info {
+    color: #17a2b8;
+}
+
+body:not(.dark-mode) a.btn-outline-warning {
+    color: #ffc107;
+}
+
+body:not(.dark-mode) a.btn-outline-success {
+    color: #28a745;
+}
+
+
+
+body:not(.dark-mode) .table-dark.table-hover tbody tr:hover {
+    color: #000;
+}
+
+body:not(.dark-mode) .card.border-secondary {
+  border-color: #f4f4f4 !important;
+}
+
+.brand-text{
+    font-size: 1.5rem !important;
+}

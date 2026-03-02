@@ -4,30 +4,52 @@ requirePermission('themes');
 require_once __DIR__ . '/../includes/settings.php';
 require_once __DIR__ . '/../includes/config.php';
 
-$csrf    = getCsrfToken();
-$rootDir = __DIR__ . '/..';
+$csrf        = getCsrfToken();
+$rootDir     = __DIR__ . '/..';
+$activeTheme = getSetting('active_theme', 'default');
 
 // ─── Fichiers éditables (liste blanche stricte) ───────────────────────────────
 $editableFiles = [
-    'index.php'         => ['label' => 'index.php',         'icon' => 'fa-home',          'desc' => 'Page d\'accueil (homepage)'],
+    'home.php'          => ['label' => 'home.php',          'icon' => 'fa-home',          'desc' => 'Page d\'accueil (thème : ' . $activeTheme . ')'],
     'page.php'          => ['label' => 'page.php',          'icon' => 'fa-file-alt',       'desc' => 'Routeur CMS (toutes les pages dynamiques)'],
-    '_contact'      => ['label' => '_contact',      'icon' => 'fa-envelope',       'desc' => 'Template page Contact'],
+    '_contact'          => ['label' => '_contact',          'icon' => 'fa-envelope',       'desc' => 'Template page Contact'],
     '_realisations.php' => ['label' => '_realisations.php', 'icon' => 'fa-paint-roller',   'desc' => 'Template page Réalisations'],
 ];
 
-// ─── Fichier actif ────────────────────────────────────────────────────────────
-$activeFile = $_GET['file'] ?? 'index.php';
-if (!array_key_exists($activeFile, $editableFiles)) $activeFile = 'index.php';
+// ─── Résolution des chemins absolus par clé ──────────────────────────────────
+$filePaths = [
+    'home.php' => $rootDir . '/themes/' . $activeTheme . '/partials/home.php',
+];
 
-$absPath     = $rootDir . '/' . $activeFile;
-$fileContent = file_exists($absPath) ? file_get_contents($absPath) : '';
-$fileExists  = file_exists($absPath);
+// ─── Fichier actif ────────────────────────────────────────────────────────────
+$activeFile = $_GET['file'] ?? 'home.php';
+if (!array_key_exists($activeFile, $editableFiles)) $activeFile = 'home.php';
+
+$absPath    = $filePaths[$activeFile] ?? ($rootDir . '/' . $activeFile);
+$fileExists = file_exists($absPath);
+
+// ─── Créer home.php depuis le template par défaut si absent ──────────────────
+if ($activeFile === 'home.php' && !$fileExists) {
+    $themeDir = dirname($absPath);
+    if (!is_dir($themeDir)) {
+        mkdir($themeDir, 0755, true);
+    }
+    $defaultHomePath = $rootDir . '/app/Views/front/home.php';
+    $defaultContent  = file_exists($defaultHomePath)
+        ? file_get_contents($defaultHomePath)
+        : "<?php\n// Page d'accueil — thème {$activeTheme}\n// Personnalisez cette vue pour ce thème.\n?>\n";
+    file_put_contents($absPath, $defaultContent);
+    @chmod($absPath, 0664);
+    $fileExists = true;
+}
+
+$fileContent = $fileExists ? file_get_contents($absPath) : '';
 
 // ─── URL de prévisualisation ──────────────────────────────────────────────────
 $previewUrls = [
-    'index.php'         => BASE_URL . '/',
+    'home.php'          => BASE_URL . '/',
     'page.php'          => BASE_URL . '/',
-    '_contact'      => BASE_URL . '/contact',
+    '_contact'          => BASE_URL . '/contact',
     '_realisations.php' => BASE_URL . '/realisations',
 ];
 $previewUrl = $previewUrls[$activeFile] ?? BASE_URL . '/';
@@ -92,7 +114,8 @@ require_once __DIR__ . '/partials/header.php';
             </div>
             <div class="card-body p-1">
               <?php foreach ($editableFiles as $fname => $finfo):
-                $exists   = file_exists($rootDir . '/' . $fname);
+                $fpath  = $filePaths[$fname] ?? ($rootDir . '/' . $fname);
+                $exists   = file_exists($fpath);
                 $isActive = ($fname === $activeFile);
               ?>
               <a href="page-editor.php?file=<?= urlencode($fname) ?>"

@@ -1005,3 +1005,9 @@ th.sortable a.sort-link {
   color: rgba(255,255,255,.5);
   margin: 0;
 }
+
+
+
+.sidebar-mini .main-sidebar .nav-link {
+  width: calc(250px - 1rem * 2) !important;
+}
