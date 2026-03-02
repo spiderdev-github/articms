@@ -1,2 +1,30 @@
-Version : 1.0.0
+Version  : 1.0.0
+Date     : 2026-02-26
+Codename : Initial Release
+
+---
+
+Release Notes — ArtiCMS v1.0.0
+================================
+
+Première version publique d'ArtiCMS, CMS PHP léger et modulaire destiné aux
+sites vitrine d'artisans et de TPE.
+
+Points clés de cette version :
+
+  • Front-office complet avec thèmes interchangeables (default, clair, haussmann, marine)
+  • Back-office avec tableau de bord KPIs, gestion des pages (TinyMCE), médias,
+    galeries, réalisations, formulaires personnalisés et éditeur de menu
+  • Module CRM intégré : fiche clients, devis et factures PDF (DomPDF),
+    envoi email (PHPMailer), conversion contact → client
+  • Sécurité renforcée : bcrypt, 2FA TOTP, CSRF, rate-limiting, liste noire IP
+  • Wizard d'installation web autonome
+  • SEO natif : sitemap XML, robots.txt, balises meta / Open Graph
+  • Sauvegarde / restauration complète en .tar.gz
+  • Architecture MVC maison, sans framework, PHP 8.1+
+
+Prérequis : PHP >= 8.1, MySQL/MariaDB >= 5.7/10.3, Composer 2.x
+
+Voir CHANGELOG.md pour le détail exhaustif de toutes les fonctionnalités.
+
 Date : 26/02/2026
