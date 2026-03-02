@@ -233,7 +233,7 @@ else:
     <div class="jp-cb-text">
       <strong>Ce site utilise des cookies</strong>
       Nous utilisons des cookies pour améliorer votre expérience et mesurer l'audience.
-      <a href="<?= BASE_URL ?>/politique-confidentialite.php">En savoir plus</a>
+      <a href="<?= BASE_URL ?>/politique-confidentialite">En savoir plus</a>
     </div>
     <div class="jp-cb-actions">
       <button id="jp-cb-custom" class="jp-cb-btn jp-cb-custom">Personnaliser</button>
